@@ -10,18 +10,20 @@ const playerBody = new CANNON.Body({
 
 export function setupPhysics() {
     const world = new CANNON.World();
-    world.gravity.set(0, -9.8, 0);  // Queda mais rápida
+    world.gravity.set(0, -9.8, 0); // Use -20 para mais "peso", -9.82 é padrão
     
     const playerMaterial = new CANNON.Material("player");
     const groundMaterial = new CANNON.Material("ground");
     
-    world.addContactMaterial(
-        new CANNON.ContactMaterial(
-            groundMaterial,
-            playerMaterial,
-            { friction: 0.1, restitution: 0.3 }  // Atrito e quique ajustados
-        )
+    const contactMaterial = new CANNON.ContactMaterial(
+        groundMaterial,
+        playerMaterial,
+        {
+            friction: 0.8, // Aumente para mais "grude"
+            restitution: 0.0
+        }
     );
+    world.addContactMaterial(contactMaterial);
     
     playerBody.material = playerMaterial;
     world.addBody(playerBody);
@@ -32,6 +34,7 @@ export function setupPhysics() {
         material: groundMaterial
     });
     groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); // Rotaciona o plano para ser horizontal
+    groundBody.material = groundMaterial;
     world.addBody(groundBody);
 
     return world;

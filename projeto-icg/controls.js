@@ -5,13 +5,21 @@ import * as THREE from 'three';
  * O movimento e salto são aplicados ao corpo físico, e a câmara segue o corpo.
  */
 export function setupControls(camera, domElement, playerBody) {
-    const speed = 5;
-    const jumpVelocity = 10;
+    const speed = 2;
+    const jumpVelocity = 8;
     const mouseSensitivity = 0.001;
 
     let yaw = 0;
     let pitch = 0;
     let canJump = false;
+
+    // Parâmetros para bunny hop
+    const groundFriction = 8;
+    const airControl = 0.5;
+    const maxSpeed = 8;
+
+    // Variável para guardar o último movimento do mouse (para air-strafe)
+    let lastMouseDX = 0;
 
     // 1. Pointer Lock (Bloqueio do Mouse)
     function lockPointer() {
@@ -26,6 +34,7 @@ export function setupControls(camera, domElement, playerBody) {
     // 2. Controle da Câmera com Mouse
     function onMouseMove(e) {
         if (document.pointerLockElement === domElement) {
+            lastMouseDX = e.movementX;
             yaw -= e.movementX * mouseSensitivity;
             pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch - e.movementY * mouseSensitivity));
             camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
@@ -70,26 +79,73 @@ export function setupControls(camera, domElement, playerBody) {
         if (keys['KeyA']) moveX -= 1;
         if (keys['KeyD']) moveX += 1;
 
-        // Movimento horizontal
-        const move = new THREE.Vector3();
-        move.addScaledVector(forward, moveZ);
-        move.addScaledVector(right, moveX);
-        if (move.length() > 0) move.normalize();
+        // Movimento desejado
+        let wishDir = new THREE.Vector3();
+        wishDir.addScaledVector(forward, moveZ);
+        wishDir.addScaledVector(right, moveX);
 
-        // Aplica velocidade horizontal ao corpo físico
+        // --- AIR STRAFE: mouse influencia direção no ar, mas sempre aplica wishDir ---
         const velocity = playerBody.velocity;
-        velocity.x = move.x * speed;
-        // Mantém a velocidade y (gravidade do cannon-es)
-        velocity.z = move.z * speed;
+        const vel = new THREE.Vector3(velocity.x, 0, velocity.z);
+        const onGround = canJump;
 
-        // Salto
-        if (keys['Space'] && canJump) {
-            velocity.y = jumpVelocity;
-            canJump = false;
+        // Air-strafe: mouse influencia direção, mas não bloqueia A/D
+        if (!onGround && wishDir.length() > 0 && lastMouseDX !== 0) {
+            // Limita o strafeAngle para evitar perda brusca de velocidade
+            const maxStrafe = Math.PI / 8; // ~22.5 graus por frame
+            let strafeAngle = lastMouseDX * mouseSensitivity * 2.5;
+            strafeAngle = Math.max(-maxStrafe, Math.min(maxStrafe, strafeAngle));
+            wishDir.applyAxisAngle(new THREE.Vector3(0,1,0), strafeAngle);
         }
+
+        if (wishDir.length() > 0) wishDir.normalize();
+
+        // --- Bunny hop/strafe estilo CS: aceleração gradual ---
+
+        // Função para acelerar na direção desejada, sem ultrapassar o máximo
+        function accelerate(vel, wishDir, accel, maxSpeed, deltaTime) {
+            const currentSpeed = vel.dot(wishDir);
+            const addSpeed = maxSpeed - currentSpeed;
+            if (addSpeed <= 0) return;
+            const accelSpeed = Math.min(accel * deltaTime * maxSpeed, addSpeed);
+            vel.addScaledVector(wishDir, accelSpeed);
+        }
+
+        if (onGround) {
+            // Aplica fricção sempre no chão (como no CS)
+            vel.multiplyScalar(Math.max(0, 1 - groundFriction * deltaTime));
+            // Acelera gradualmente na direção desejada
+            if (wishDir.length() > 0) {
+                accelerate(vel, wishDir, speed * 2, maxSpeed, deltaTime);
+            }
+            // Salto
+            if (keys['Space']) {
+                velocity.y = jumpVelocity;
+                canJump = false;
+            }
+        } else {
+            // Controle aéreo limitado + air-strafe
+            if (!onGround && wishDir.length() > 0) {
+                // Só acelera se o input está na mesma direção do movimento, nunca freia
+                const currentSpeed = vel.dot(wishDir);
+                const addSpeed = maxSpeed - currentSpeed;
+                if (addSpeed > 0) {
+                    // Só soma aceleração positiva, nunca negativa!
+                    const accelSpeed = Math.min(airControl * deltaTime * maxSpeed, addSpeed);
+                    vel.addScaledVector(wishDir, accelSpeed);
+                }
+            }
+        }
+
+        // Aplica velocidades calculadas
+        velocity.x = vel.x;
+        velocity.z = vel.z;
 
         // Sincroniza câmara com corpo físico
         camera.position.copy(playerBody.position);
+
+        // Zera o movimento do m        // Zera o ra não acumular)
+        lastMouseDX = 0; 
     }
 
     return update;

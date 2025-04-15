@@ -8,10 +8,13 @@ export function createScene(world) {
     // Configuração das plataformas (caixas)
     const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
     const platforms = [
-        { position: [0, 1, 0], size: [5, 1, 5] },  // Plataforma central
-        { position: [10, 2, 0], size: [5, 1, 5] }, // Plataforma à direita
-        { position: [-10, 3, 0], size: [5, 1, 5] }, // Plataforma à esquerda
-        { position: [0, 4, -10], size: [5, 1, 5] }, // Plataforma atrás
+        { position: [0, 1, 0], size: [10, 1, 10] },  // Plataforma central
+        { position: [0, 1, -15], size: [5, 0.25, 5] }, // Plataforma atrás
+        { position: [0, 1, -30], size: [5, 0.25, 5] },
+        { position: [5, 1, -45], size: [5, 0.25, 5] },
+        { position: [-5, 1, -60], size: [5, 0.25, 5] },
+        { position: [5, 1, -75], size: [5, 0.25, 5] },
+        { position: [0, 1, -90], size: [10, 1, 10] },
     ];
 
     platforms.forEach(({ position, size }) => {
