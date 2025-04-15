@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEVEL 0</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="info">
+        LEVEL 0<br>
+        <br>
+        WASD - Move<br>
+        SPACE - Jump (hold for bunny hop)<br>
+        MOUSE+A/D - Air strafe<br>
+        SHIFT - Sprint<br>
+        <span id="speedometer">Speed: 0 u/s</span><br>
+        <span id="bhopStatus"></span><br>
+        <span id="fps">FPS: 0</span>
+    </div>
+    
+    <div id="pauseMenuContainer"></div>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/",
+                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+            }
+        }
+    </script>
+    <script type="module" src="./main.js"></script>
+    <script>
+        fetch('pauseMenu.html')
+            .then(r => r.text())
+            .then(html => document.getElementById('pauseMenuContainer').innerHTML = html);
+    </script>
+</body>
+</html>
