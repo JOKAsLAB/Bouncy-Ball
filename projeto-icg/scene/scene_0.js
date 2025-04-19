@@ -1,40 +1,32 @@
 import { createBaseScene } from './scene_base.js';
 import * as THREE from 'three';
-import * as CANNON from 'cannon-es'; // Importa Cannon-es para física
+import * as CANNON from 'cannon-es';
 
 export function createScene(world) {
     const scene = createBaseScene();
 
-    // Materiais
-    const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // verde
-    const orangeMaterial = new THREE.MeshStandardMaterial({ color: 0xffa500 });   // laranja
+    const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+    const orangeMaterial = new THREE.MeshStandardMaterial({ color: 0xffa500 });
 
     const platforms = [
-        { position: [0, 1, -0], size: [10, 1, 5] },  // Plataforma central (laranja)
-        { position: [0, 1, -5], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, -10], size: [2.5, 0.25, 2.5] },
-        { position: [-2, 1, -15], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, -20], size: [2.5, 0.25, 2.5] },
-        { position: [-2, 1, -25], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, -30], size: [10, 1, 5] }, // Plataforma final (laranja)
+        { position: [0, 1, 0], size: [10, 1, 5], isCheckpoint: true },
+        { position: [0, 1, 5], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 10], size: [2.5, 0.25, 2.5] },
+        { position: [-2, 1, 15], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 20], size: [2.5, 0.25, 2.5] },
         { position: [-2, 1, 25], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 30], size: [10, 1, 5], isCheckpoint: true },
+        { position: [0, 1, 35], size: [2.5, 0.25, 2.5] },
     ];
 
-    platforms.forEach(({ position, size }) => {
-        // Se for plataforma grande, usa laranja
-        const isOrange = 
-            (size[0] === 10 && size[1] === 1 && size[2] === 5) ||
-            (size[0] === 5 && size[1] === 1 && size[2] === 5);
+    platforms.forEach(({ position, size, isCheckpoint }) => {
+        const material = size[0] === 10 ? orangeMaterial : platformMaterial;
 
-        const material = isOrange ? orangeMaterial : platformMaterial;
-
-        // Criação da plataforma visual (Three.js)
         const geometry = new THREE.BoxGeometry(...size);
         const platform = new THREE.Mesh(geometry, material);
         platform.position.set(...position);
         scene.add(platform);
 
-        // Criação da plataforma física (Cannon-es)
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
         const body = new CANNON.Body({
             mass: 0,
@@ -42,6 +34,32 @@ export function createScene(world) {
             shape: shape,
         });
         world.addBody(body);
+
+        // Adicionar checkpoint como um cubo invisível
+        if (isCheckpoint) {
+            const checkpointGeometry = new THREE.BoxGeometry(size[0], 2, size[2]);
+            const checkpointMaterial = new THREE.MeshStandardMaterial({
+                color: 0xff0000, // Vermelho inicialmente
+                transparent: true,
+                opacity: 0.5, // Visível para depuração
+            });
+            const checkpoint = new THREE.Mesh(checkpointGeometry, checkpointMaterial);
+            checkpoint.position.set(position[0], position[1] + 1.5, position[2]);
+            checkpoint.isCheckpoint = true; // Identificador para lógica
+            scene.add(checkpoint);
+
+            const checkpointShape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, 1, size[2] / 2));
+            const checkpointBody = new CANNON.Body({
+                mass: 0, // Sem massa, não afeta a física
+                position: new CANNON.Vec3(position[0], position[1] + 1, position[2]),
+                shape: checkpointShape,
+                collisionResponse: false, // Desativa resposta de colisão
+            });
+            checkpointBody.isTrigger = true; // Marcador para lógica de detecção
+            checkpointBody.isCheckpoint = true; // Identificador
+            checkpointBody.visual = checkpoint; // Referência ao objeto visual
+            world.addBody(checkpointBody);
+        }
     });
 
     return scene;
