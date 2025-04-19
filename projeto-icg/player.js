@@ -4,7 +4,7 @@ export function createPlayerBody() {
     // Cria um corpo físico para o jogador (esfera)
     const radius = 1;
     const body = new CANNON.Body({
-        mass: 1,
+        mass: 5,
         shape: new CANNON.Sphere(radius),
         position: new CANNON.Vec3(0, 5, 0)
     });

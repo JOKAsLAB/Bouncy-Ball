@@ -5,6 +5,7 @@ export function setupPauseMenu(onPauseChange, pointerLockElement = document.body
     const exitBtn = document.getElementById('exitBtn');
     let paused = false;
 
+    // Pausa ao perder pointer lock
     document.addEventListener('pointerlockchange', () => {
         if (document.pointerLockElement === null && !paused) {
             paused = true;
@@ -13,28 +14,41 @@ export function setupPauseMenu(onPauseChange, pointerLockElement = document.body
         }
     });
 
+    // Retomar
     resumeBtn?.addEventListener('click', () => {
-        paused = false;
-        pauseMenu.style.display = 'none';
-        // Volta a pedir pointer lock no elemento correto
-        pointerLockElement.requestPointerLock?.();
-        if (onPauseChange) onPauseChange(paused);
+        if (paused) {
+            paused = false;
+            pauseMenu.style.display = 'none';
+            if (document.pointerLockElement !== pointerLockElement) {
+                pointerLockElement.requestPointerLock?.();
+            }
+            if (onPauseChange) onPauseChange(paused);
+        }
     });
 
+    // Opções
     optionsBtn?.addEventListener('click', () => {
         alert('Opções ainda não implementadas!');
     });
 
+    // Sair para menu
     exitBtn?.addEventListener('click', () => {
         window.location.href = 'menu.html';
     });
 
+    // ESC para pausar/retomar
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'Escape' && paused) {
-            paused = false;
-            pauseMenu.style.display = 'none';
-            pointerLockElement.requestPointerLock?.();
-            if (onPauseChange) onPauseChange(paused);
+        if (e.code === 'Escape') {
+            if (!paused && document.pointerLockElement) {
+                // Pausar manualmente
+                document.exitPointerLock();
+            } else if (paused) {
+                // Retomar
+                paused = false;
+                pauseMenu.style.display = 'none';
+                pointerLockElement.requestPointerLock?.();
+                if (onPauseChange) onPauseChange(paused);
+            }
         }
     });
 

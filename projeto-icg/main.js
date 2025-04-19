@@ -1,115 +1,89 @@
-import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
-import camera from './camera.js';
-import renderer from './renderer.js';
-import { setupControls } from './controls.js';
-import { createScene } from './scene/scene_0.js';
-import { createPlayerBody } from './player.js';
+import * as CANNON from 'cannon-es'
+import renderer from './renderer.js'
+import camera from './camera.js'
+import PlayerController from './PlayerController.js'
+import { createPlayerBody } from './player.js'
 import { setupPauseMenu } from './pauseMenu.js';
 
-// Criação do mundo físico
-const world = new CANNON.World();
-world.gravity.set(0, -9.82, 0); // Configura a gravidade
+// Modelo
+const world = new CANNON.World()
+world.gravity.set(0, -9.82, 0)
+// … monte materiais e groundBody aqui …
 
-const playerBody = createPlayerBody();
-world.addBody(playerBody);
+const playerBody = createPlayerBody()
+world.addBody(playerBody)
 
-let scene; // Variável para armazenar a cena carregada dinamicamente
+const SPAWN_POS = new CANNON.Vec3(0, 5, 0); // ajuste conforme seu ponto inicial
 
-// Configura os controles para usar o corpo físico do jogador
-const updateControls = setupControls(camera, renderer.domElement, playerBody);
+function respawnPlayer() {
+  playerBody.position.copy(SPAWN_POS);
+  playerBody.velocity.set(0, 0, 0);
+  playerBody.angularVelocity.set(0, 0, 0);
+  
+  playerCtrl.yaw = 0;
+  playerCtrl.pitch = 0;
+  playerCtrl.camera.quaternion.setFromEuler(
+    new THREE.Euler(playerCtrl.pitch, playerCtrl.yaw, 0, 'YXZ')
+  );
+}
 
-// Elementos de UI (opcional)
-const speedometer = document.getElementById('speedometer');
-const fpsDisplay = document.getElementById('fps');
+// Presenter
+const playerCtrl = new PlayerController(camera, renderer.domElement, playerBody, world)
 
-// Variáveis para cálculo do deltaTime
-let lastTime = performance.now();
-let frameCount = 0;
-let fps = 60;
+// Detecta o nível pelo nome do HTML
+let createScene;
+if (window.location.pathname.includes('level_1')) {
+    ({ createScene } = await import('./scene/scene_1.js'));
+} else {
+    ({ createScene } = await import('./scene/scene_0.js'));
+}
+
+// View: crie a cena UMA única vez
+const scene = createScene(world)
+
+const isPaused = setupPauseMenu(paused => {
+  // Aqui você pode travar/destravar controles do player se quiser
+}, renderer.domElement);
+
+// Loop com fixed‐timestep
+const FIXED = 1/60
+let last = performance.now(), acc = 0
+
 let lastFpsUpdate = 0;
+let frames = 0;
+let fps = 0;
 
-// Variável para armazenar a última posição
-const lastPosition = new THREE.Vector3();
+function animate(now) {
+  const dt = (now - last) / 1000
+  last = now
+  acc += dt
 
-let paused = false;
-const getPaused = setupPauseMenu((isPaused) => { paused = isPaused; }, renderer.domElement);
+  // FPS counter
+  frames++;
+  if (now - lastFpsUpdate > 500) {
+    fps = Math.round((frames * 1000) / (now - lastFpsUpdate));
+    lastFpsUpdate = now;
+    frames = 0;
+    document.getElementById('fps').textContent = `FPS: ${fps}`;
+  }
 
-// Função para carregar a cena correta com base no título da página
-function loadScene() {
-    if (document.title === 'LEVEL 0') {
-        return Promise.resolve(createScene(world));
-    } else if (document.title === 'LEVEL 1') {
-        return import('./scene/scene_1.js').then(module => module.createScene(world));
-    } else {
-        console.error('Título da página não corresponde a nenhum nível conhecido.');
-        return Promise.reject('Título da página inválido.');
-    }
-}
+  // Speedometer (horizontal speed)
+  const v = playerBody.velocity;
+  const speed = Math.sqrt(v.x * v.x + v.z * v.z);
+  document.getElementById('speedometer').textContent = `Speed: ${speed.toFixed(2)} u/s`;
 
-function animate(currentTime) {
-    requestAnimationFrame(animate);
-    if (paused) return;
-
-    world.step(1 / 60);
-
-    // Atualiza controles (movimento + pulo)
-    updateControls(1 / 60);
-
+  while (acc >= FIXED) {
+    world.step(FIXED)
+    playerCtrl.fixedUpdate(FIXED)
     // Respawn se cair no void
-    if (playerBody.position.y < -20) {
-        playerBody.position.set(0, 5, 0); // Posição de respawn (ajuste se quiser)
-        playerBody.velocity.set(0, 0, 0); // Zera a velocidade
-        playerBody.angularVelocity.set(0, 0, 0); // Zera rotação
+    if (playerBody.position.y < -10) {
+      respawnPlayer();
     }
+    acc -= FIXED
+  }
 
-    // Sincroniza a posição da câmera com o corpo físico do jogador
-    camera.position.copy(playerBody.position);
-
-    // Atualiza UI (opcional)
-    updateUI(currentTime);
-
-    // Renderiza
-    renderer.render(scene, camera);
+  renderer.render(scene, camera)
+  requestAnimationFrame(animate)
 }
 
-function updateUI(currentTime) {
-    // Calcula FPS
-    frameCount++;
-    if (currentTime - lastFpsUpdate > 1000) {
-        fps = Math.round(frameCount * 1000 / (currentTime - lastFpsUpdate));
-        lastFpsUpdate = currentTime;
-        frameCount = 0;
-        if (fpsDisplay) fpsDisplay.textContent = `FPS: ${fps}`;
-    }
-    
-    // Calcula a velocidade do jogador
-    const velocity = Math.sqrt(
-        Math.pow(camera.position.x - lastPosition.x, 2) +
-        Math.pow(camera.position.z - lastPosition.z, 2)
-    ) * 60; // Aproximação para u/s
-
-    lastPosition.copy(camera.position); // Atualiza a última posição
-
-    // Atualiza o speedometer
-    if (speedometer) {
-        speedometer.textContent = `Speed: ${velocity.toFixed(2)} u/s`;
-    }
-}
-
-// Inicializa o jogo carregando a cena correta
-loadScene()
-    .then(loadedScene => {
-        scene = loadedScene;
-        animate(performance.now());
-    })
-    .catch(error => {
-        console.error('Erro ao carregar a cena:', error);
-    });
-
-// Resize handler (mantido)
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+requestAnimationFrame(animate)
