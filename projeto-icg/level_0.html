@@ -7,6 +7,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Timer Display (Top Center) -->
+    <div id="timerDisplay" style="
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 24px;
+        font-family: monospace;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 5px 15px;
+        border-radius: 5px;
+        z-index: 999; /* Abaixo dos menus */
+        display: none; /* Começa escondido até o jogo iniciar */
+    ">
+        00:00:000
+    </div>
+
     <div id="info">
         LEVEL 0<br>
         <br>
@@ -18,7 +36,46 @@
         <span id="bhopStatus"></span><br>
         <span id="fps">FPS: 0</span>
     </div>
-    
+
+    <!-- Level Complete Menu (Initially Hidden) -->
+    <div id="levelCompleteMenu" style="
+        display: none; /* Mantém escondido inicialmente */
+        position: fixed; /* Cobre a tela inteira, fixo */
+        top: 0;
+        left: 0;
+        width: 100vw; /* Largura total da viewport */
+        height: 100vh; /* Altura total da viewport */
+        background: rgba(0, 0, 0, 0.7); /* Fundo preto semi-transparente (cinzento escuro) */
+        z-index: 1000; /* Garante que fica por cima do jogo (igual ao pauseMenu) */
+        /* Usa flexbox para centrar o conteúdo interno */
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        /* display: none; /* Movido para cima para clareza */
+    ">
+        <!-- Caixa interna para o conteúdo do menu -->
+        <div style="
+            background: #222; /* Fundo da caixa de conteúdo (igual ao pauseMenu) */
+            padding: 32px 48px; /* Espaçamento interno (igual ao pauseMenu) */
+            border-radius: 12px; /* Cantos arredondados (igual ao pauseMenu) */
+            display: flex; /* Usa flexbox para organizar botões */
+            flex-direction: column; /* Botões em coluna */
+            gap: 20px; /* Espaço entre botões (igual ao pauseMenu) */
+            align-items: center; /* Centra itens */
+            border: 2px solid #fff; /* Adiciona uma borda branca para destaque */
+            color: white; /* Cor do texto */
+        ">
+            <h2 style="color:#fff; margin-bottom: 10px;">Level Complete!</h2> <!-- Ajuste margem se necessário -->
+            <!-- Display Final Time -->
+            <div id="finalTimeDisplay" style="color: #ffc107; font-size: 20px; margin-bottom: 15px;">
+                Time: --:--:---
+            </div>
+            <button id="nextLevelBtn" style="padding: 10px 20px; cursor: pointer;">Next Level</button>
+            <button id="restartLevelBtn" style="padding: 10px 20px; cursor: pointer;">Restart Level</button>
+            <button id="mainMenuBtn" style="padding: 10px 20px; cursor: pointer;">Main Menu</button>
+        </div>
+    </div>
+
     <div id="pauseMenuContainer"></div>
     
     <script type="importmap">

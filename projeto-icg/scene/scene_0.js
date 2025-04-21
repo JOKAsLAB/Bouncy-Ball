@@ -7,6 +7,8 @@ export function createScene(world) {
 
     const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
     const orangeMaterial = new THREE.MeshStandardMaterial({ color: 0xffa500 });
+    // Gold color for the final checkpoint visual
+    const finalCheckpointMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, transparent: true, opacity: 0.6 });
 
     const platforms = [
         { position: [0, 1, 0], size: [10, 1, 5], isCheckpoint: true },
@@ -17,9 +19,20 @@ export function createScene(world) {
         { position: [-2, 1, 25], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 30], size: [10, 1, 5], isCheckpoint: true },
         { position: [0, 1, 35], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 40], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 45], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 50], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 55], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 60], size: [10, 1, 5], isCheckpoint: true },
+        { position: [0, 1, 65], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 70], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 75], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 80], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 85], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 90], size: [10, 1, 5], isCheckpoint: true, isFinal: true }, // Mark as final
     ];
 
-    platforms.forEach(({ position, size, isCheckpoint }) => {
+    platforms.forEach(({ position, size, isCheckpoint, isFinal = false }) => { // Add isFinal parameter
         const material = size[0] === 10 ? orangeMaterial : platformMaterial;
 
         const geometry = new THREE.BoxGeometry(...size);
@@ -38,7 +51,8 @@ export function createScene(world) {
         // Adicionar checkpoint como um cubo invisível
         if (isCheckpoint) {
             const checkpointGeometry = new THREE.BoxGeometry(size[0], 2, size[2]);
-            const checkpointMaterial = new THREE.MeshStandardMaterial({
+            // Use gold material if it's the final checkpoint
+            const checkpointMaterial = isFinal ? finalCheckpointMaterial.clone() : new THREE.MeshStandardMaterial({
                 color: 0xff0000, // Vermelho inicialmente
                 transparent: true,
                 opacity: 0.5, // Visível para depuração
@@ -57,6 +71,7 @@ export function createScene(world) {
             });
             checkpointBody.isTrigger = true; // Marcador para lógica de detecção
             checkpointBody.isCheckpoint = true; // Identificador
+            checkpointBody.isFinalCheckpoint = isFinal; // <-- Add the final flag here
             checkpointBody.visual = checkpoint; // Referência ao objeto visual
             world.addBody(checkpointBody);
         }

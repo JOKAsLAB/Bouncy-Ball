@@ -1,29 +1,38 @@
 export function setupPauseMenu(onPauseChange, pointerLockElement = document.body) {
-    const pauseMenu = document.getElementById('pauseMenu');
-    const resumeBtn = document.getElementById('resumeBtn');
-    const optionsBtn = document.getElementById('optionsBtn');
-    const exitBtn = document.getElementById('exitBtn');
+    const pauseMenu   = document.getElementById('pauseMenu');
+    const resumeBtn   = document.getElementById('resumeBtn');
+    const restartBtn  = document.getElementById('restartBtn');   // Captura o novo botão
+    const optionsBtn  = document.getElementById('optionsBtn');
+    const exitBtn     = document.getElementById('exitBtn');
     let paused = false;
 
     // Pausa ao perder pointer lock
     document.addEventListener('pointerlockchange', () => {
         if (document.pointerLockElement === null && !paused) {
-            paused = true;
-            pauseMenu.style.display = 'flex';
-            if (onPauseChange) onPauseChange(paused);
+            let shouldPause = true;
+            if (onPauseChange) {
+                const allowed = onPauseChange(true);
+                if (allowed === false) shouldPause = false;
+            }
+            if (shouldPause) {
+                paused = true;
+                pauseMenu.style.display = 'flex';
+            }
         }
     });
 
     // Retomar
     resumeBtn?.addEventListener('click', () => {
-        if (paused) {
-            paused = false;
-            pauseMenu.style.display = 'none';
-            if (document.pointerLockElement !== pointerLockElement) {
-                pointerLockElement.requestPointerLock?.();
-            }
-            if (onPauseChange) onPauseChange(paused);
-        }
+        if (!paused) return;
+        paused = false;
+        pauseMenu.style.display = 'none';
+        onPauseChange?.(false);
+        pointerLockElement.requestPointerLock?.();
+    });
+
+    // Restart
+    restartBtn?.addEventListener('click', () => {
+        window.location.reload();
     });
 
     // Opções
@@ -36,19 +45,18 @@ export function setupPauseMenu(onPauseChange, pointerLockElement = document.body
         window.location.href = 'menu.html';
     });
 
-    // ESC para pausar/retomar
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'Escape') {
-            if (!paused && document.pointerLockElement) {
-                // Pausar manualmente
-                document.exitPointerLock();
-            } else if (paused) {
-                // Retomar
-                paused = false;
-                pauseMenu.style.display = 'none';
-                pointerLockElement.requestPointerLock?.();
-                if (onPauseChange) onPauseChange(paused);
-            }
+    // ESC para toggle
+    window.addEventListener('keydown', e => {
+        if (e.code !== 'Escape') return;
+        if (!paused && document.pointerLockElement) {
+            // pausa: sai do pointer lock
+            document.exitPointerLock();
+        } else if (paused) {
+            // retoma: fecha menu e relock
+            paused = false;
+            pauseMenu.style.display = 'none';
+            onPauseChange?.(false);
+            pointerLockElement.requestPointerLock?.();
         }
     });
 
