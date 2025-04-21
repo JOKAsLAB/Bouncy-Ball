@@ -77,7 +77,7 @@ function handleLevelComplete() {
 
     nextBtn.onclick = () => { window.location.href = 'level_1.html'; };
     restartBtn.onclick = () => { window.location.href = window.location.pathname; };
-    menuBtn.onclick = () => { window.location.href = 'menu.html'; };
+    menuBtn.onclick = () => { window.location.href = 'index.html'; };
 
     if (window.location.pathname.includes('level_1')) {
          if (nextBtn) {

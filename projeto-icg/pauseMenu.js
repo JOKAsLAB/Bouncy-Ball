@@ -42,7 +42,7 @@ export function setupPauseMenu(onPauseChange, pointerLockElement = document.body
 
     // Sair para menu
     exitBtn?.addEventListener('click', () => {
-        window.location.href = 'menu.html';
+        window.location.href = 'index.html';
     });
 
     // ESC para toggle
