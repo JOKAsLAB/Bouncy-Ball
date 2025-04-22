@@ -32,7 +32,7 @@ export function createScene(world) {
         { position: [0, 1, 90], size: [10, 1, 5], isCheckpoint: true, isFinal: true }, // Mark as final
     ];
 
-    platforms.forEach(({ position, size, isCheckpoint, isFinal = false }) => { // Add isFinal parameter
+    platforms.forEach(({ position, size, isCheckpoint, isFinal = false }) => {
         const material = size[0] === 10 ? orangeMaterial : platformMaterial;
 
         const geometry = new THREE.BoxGeometry(...size);
@@ -48,10 +48,24 @@ export function createScene(world) {
         });
         world.addBody(body);
 
+        // Adiciona listener de colisão para verificar a normal
+        body.addEventListener('collide', (event) => {
+            const contact = event.contact;
+            const normal = contact.ni; // Normal da colisão (direção perpendicular)
+
+            // Verifica se a colisão é na parte de cima da plataforma
+            if (normal.y > 0.9) {
+                // Permite o salto (colisão válida)
+                event.body.isOnTop = true;
+            } else {
+                // Ignora colisões laterais
+                event.body.isOnTop = false;
+            }
+        });
+
         // Adicionar checkpoint como um cubo invisível
         if (isCheckpoint) {
             const checkpointGeometry = new THREE.BoxGeometry(size[0], 2, size[2]);
-            // Use gold material if it's the final checkpoint
             const checkpointMaterial = isFinal ? finalCheckpointMaterial.clone() : new THREE.MeshStandardMaterial({
                 color: 0xff0000, // Vermelho inicialmente
                 transparent: true,
