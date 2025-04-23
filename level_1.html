@@ -67,7 +67,8 @@
     </div>
 
     <div id="pauseMenuContainer"></div>
-    
+    <div id="optionsMenuContainer"></div> <!-- Add container for options menu -->
+
     <script type="importmap">
         {
             "imports": {
@@ -79,9 +80,15 @@
     </script>
     <script type="module" src="./main.js"></script>
     <script>
+        // Fetch and inject Pause Menu
         fetch('pauseMenu.html')
             .then(r => r.text())
             .then(html => document.getElementById('pauseMenuContainer').innerHTML = html);
+
+        // Fetch and inject Options Menu
+        fetch('optionsMenu.html')
+            .then(r => r.text())
+            .then(html => document.getElementById('optionsMenuContainer').innerHTML = html);
     </script>
 </body>
 </html>

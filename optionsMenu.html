@@ -1,0 +1,372 @@
+<div id="optionsMenu" style="
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5); /* Same overlay as pause menu */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1001; /* Slightly higher z-index than pause menu if needed */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: sans-serif;
+    overflow-y: auto; /* Allow scrolling if content exceeds height */
+">
+    <div style="
+        background: rgba(30, 30, 30, 0.85);
+        padding: 30px 50px; /* Slightly reduced padding */
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Reduced gap */
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        color: #ffffff;
+        min-width: 400px; /* Adjusted width */
+        max-height: 90vh; /* Limit height */
+        overflow-y: auto; /* Scroll inside the box if needed */
+    ">
+        <h2 style="
+            color: #ffffff;
+            margin: 0 0 15px 0; /* Adjusted margin */
+            font-size: 2em;
+            font-weight: 300;
+            letter-spacing: 1px;
+        ">Opções</h2>
+
+        <!-- Gameplay Options Section -->
+        <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+            <legend style="padding: 0 10px; color: #ccc;">Jogabilidade</legend>
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 18px; align-items: center;">
+
+                <!-- Mouse Sensitivity -->
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <label for="sensitivitySlider" style="margin-bottom: 8px; font-size: 1.0em;">Sensibilidade do Rato</label>
+                    <div style="display: flex; align-items: center; width: 90%;">
+                        <span style="margin-right: 10px; font-size: 0.9em;">0.1</span>
+                        <input type="range" id="sensitivitySlider" name="sensitivity" min="0.1" max="2.0" step="0.1" value="0.5" style="width: 100%; cursor: pointer;">
+                        <span style="margin-left: 10px; font-size: 0.9em;">2.0</span>
+                    </div>
+                    <span id="sensitivityValue" style="margin-top: 5px; font-size: 0.9em;">Valor: 0.5</span>
+                </div>
+
+                <!-- FOV -->
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <label for="fovSlider" style="margin-bottom: 8px; font-size: 1.0em;">Campo de Visão (FOV)</label>
+                    <div style="display: flex; align-items: center; width: 90%;">
+                        <span style="margin-right: 10px; font-size: 0.9em;">60</span>
+                        <input type="range" id="fovSlider" name="fov" min="60" max="110" step="1" value="75" style="width: 100%; cursor: pointer;">
+                        <span style="margin-left: 10px; font-size: 0.9em;">110</span>
+                    </div>
+                    <span id="fovValue" style="margin-top: 5px; font-size: 0.9em;">Valor: 75</span>
+                </div>
+
+            </div>
+        </fieldset>
+
+        <!-- Audio Options Section -->
+        <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+            <legend style="padding: 0 10px; color: #ccc;">Áudio</legend>
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 18px; align-items: center;">
+                <!-- Volume -->
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <label for="volumeSlider" style="margin-bottom: 8px; font-size: 1.0em;">Volume Geral</label>
+                    <div style="display: flex; align-items: center; width: 90%;">
+                        <span style="margin-right: 10px; font-size: 0.9em;">0%</span>
+                        <input type="range" id="volumeSlider" name="volume" min="0" max="100" step="1" value="80" style="width: 100%; cursor: pointer;">
+                        <span style="margin-left: 10px; font-size: 0.9em;">100%</span>
+                    </div>
+                    <span id="volumeValue" style="margin-top: 5px; font-size: 0.9em;">Valor: 80%</span>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- Keybindings Section -->
+        <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+            <legend style="padding: 0 10px; color: #ccc;">Atalhos de Teclado</legend>
+            <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
+                <label for="keybindForward">Frente:</label>
+                <button class="keybind-button" id="keybindForward" data-action="forward">W</button>
+
+                <label for="keybindBackward">Trás:</label>
+                <button class="keybind-button" id="keybindBackward" data-action="backward">S</button>
+
+                <label for="keybindLeft">Esquerda:</label>
+                <button class="keybind-button" id="keybindLeft" data-action="left">A</button>
+
+                <label for="keybindRight">Direita:</label>
+                <button class="keybind-button" id="keybindRight" data-action="right">D</button>
+
+                <label for="keybindJump">Saltar:</label>
+                <button class="keybind-button" id="keybindJump" data-action="jump">Space</button>
+
+                <!-- Add more keybinds here if needed -->
+            </div>
+            <p id="keybindMessage" style="text-align: center; margin-top: 10px; font-size: 0.85em; color: #ffcc00; min-height: 1.2em;"></p>
+        </fieldset>
+
+
+        <button id="backToPauseBtn" style="
+            background: rgba(100, 100, 100, 0.2); /* Neutral color */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            width: 200px;
+            text-align: center;
+            margin-top: 15px; /* Adjusted margin */
+        ">Voltar</button>
+    </div>
+    <!-- Add CSS for hover effects specific to this menu if needed -->
+    <style>
+        #optionsMenu #backToPauseBtn:hover {
+             background-color: rgba(150, 150, 150, 0.3) !important;
+             border-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        /* Basic styling for range inputs */
+        #optionsMenu input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+            transition: background 0.2s ease;
+        }
+         #optionsMenu input[type=range]:hover {
+             background: rgba(255, 255, 255, 0.4);
+         }
+        #optionsMenu input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        #optionsMenu input[type=range]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none; /* Necessary for Firefox */
+        }
+        /* Keybind Button Styling */
+        #optionsMenu .keybind-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-align: center;
+            min-width: 60px; /* Ensure minimum width */
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        #optionsMenu .keybind-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+         #optionsMenu .keybind-button.waiting { /* Style when waiting for input */
+             background-color: rgba(255, 180, 0, 0.3);
+             border-color: rgba(255, 180, 0, 0.8);
+             font-style: italic;
+         }
+         #optionsMenu fieldset {
+             margin-bottom: 10px; /* Space between sections */
+         }
+         #optionsMenu legend {
+             font-size: 0.8em;
+             font-weight: bold;
+             text-transform: uppercase;
+             letter-spacing: 0.5px;
+         }
+         #optionsMenu label {
+             justify-self: end; /* Align labels to the right in the grid */
+         }
+    </style>
+     <!-- Script to update displayed values and handle keybinds -->
+     <script>
+        // --- Get Elements ---
+        const sensitivitySlider = document.getElementById('sensitivitySlider');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+        const fovSlider = document.getElementById('fovSlider');
+        const fovValue = document.getElementById('fovValue');
+        const keybindButtons = document.querySelectorAll('.keybind-button');
+        const keybindMessage = document.getElementById('keybindMessage');
+
+        // --- Default Settings (Consider loading/saving from localStorage) ---
+        let settings = {
+            sensitivity: 0.5,
+            volume: 80,
+            fov: 75,
+            keybinds: {
+                forward: 'W',
+                backward: 'S',
+                left: 'A',
+                right: 'D',
+                jump: 'Space'
+            }
+        };
+
+        // --- Initialize Displayed Values ---
+        function updateDisplay() {
+            if (sensitivitySlider && sensitivityValue) {
+                sensitivitySlider.value = settings.sensitivity;
+                sensitivityValue.textContent = 'Valor: ' + parseFloat(settings.sensitivity).toFixed(1);
+            }
+            if (volumeSlider && volumeValue) {
+                volumeSlider.value = settings.volume;
+                volumeValue.textContent = 'Valor: ' + settings.volume + '%';
+            }
+            if (fovSlider && fovValue) {
+                fovSlider.value = settings.fov;
+                fovValue.textContent = 'Valor: ' + settings.fov;
+            }
+            keybindButtons.forEach(button => {
+                const action = button.dataset.action;
+                if (action && settings.keybinds[action]) {
+                    // Display 'Space' instead of ' ' for readability
+                    button.textContent = settings.keybinds[action] === ' ' ? 'Space' : settings.keybinds[action].toUpperCase();
+                }
+            });
+        }
+
+        // --- Event Listeners for Sliders ---
+        if (sensitivitySlider) {
+            sensitivitySlider.oninput = function() {
+                settings.sensitivity = parseFloat(this.value);
+                updateDisplay();
+                // Apply sensitivity change (needs access to PlayerController instance)
+                // Example: if (window.playerController) window.playerController.setSensitivity(settings.sensitivity);
+                console.log("Sensitivity changed to:", settings.sensitivity); // Placeholder
+            }
+        }
+
+        if (volumeSlider) {
+            volumeSlider.oninput = function() {
+                settings.volume = parseInt(this.value);
+                updateDisplay();
+                // Apply volume change (needs access to Audio system)
+                // Example: if (window.audioListener) window.audioListener.setMasterVolume(settings.volume / 100);
+                 console.log("Volume changed to:", settings.volume); // Placeholder
+            }
+        }
+
+        if (fovSlider) {
+            fovSlider.oninput = function() {
+                settings.fov = parseInt(this.value);
+                updateDisplay();
+                // Apply FOV change (needs access to Camera instance)
+                // Example: if (window.gameCamera) { window.gameCamera.fov = settings.fov; window.gameCamera.updateProjectionMatrix(); }
+                 console.log("FOV changed to:", settings.fov); // Placeholder
+            }
+        }
+
+        // --- Event Listeners for Keybinding ---
+        let listeningButton = null; // Track which button is waiting for input
+
+        function handleKeydown(event) {
+            event.preventDefault(); // Prevent default browser actions for the key
+            if (!listeningButton) return;
+
+            let newKey = event.key;
+            const action = listeningButton.dataset.action;
+
+            // Use 'Space' for the spacebar key for consistency
+            if (newKey === ' ') {
+                newKey = 'Space';
+            }
+
+            // Basic validation (optional: check for conflicts)
+            if (newKey && action) {
+                 // Check if key is already bound to another action
+                let conflict = false;
+                for (const act in settings.keybinds) {
+                    if (settings.keybinds[act] === newKey && act !== action) {
+                        conflict = true;
+                        break;
+                    }
+                }
+
+                if (conflict) {
+                     keybindMessage.textContent = `Tecla '${newKey.toUpperCase()}' já está em uso!`;
+                } else {
+                    settings.keybinds[action] = newKey;
+                    keybindMessage.textContent = ''; // Clear message
+                    updateDisplay(); // Update button text
+                     // Apply keybinding change (needs access to PlayerController instance)
+                     // Example: if (window.playerController) window.playerController.updateKeybindings(settings.keybinds);
+                     console.log("Keybinds updated:", settings.keybinds); // Placeholder
+                }
+
+            }
+
+            // Reset button appearance and stop listening
+            listeningButton.classList.remove('waiting');
+            listeningButton.disabled = false; // Re-enable button
+            listeningButton = null;
+            document.removeEventListener('keydown', handleKeydown, true); // Remove the specific listener
+            keybindButtons.forEach(btn => btn.disabled = false); // Re-enable all buttons
+        }
+
+        keybindButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (listeningButton) {
+                    // Cancel previous listening state if another button is clicked
+                    listeningButton.classList.remove('waiting');
+                    listeningButton.disabled = false;
+                    updateDisplay(); // Restore original text if needed
+                }
+
+                listeningButton = button;
+                button.textContent = 'Pressione...';
+                button.classList.add('waiting');
+                keybindMessage.textContent = 'Pressione uma tecla para atribuir... (ESC para cancelar)';
+
+                // Disable all buttons while listening
+                keybindButtons.forEach(btn => btn.disabled = true);
+                button.disabled = false; // Keep the current one technically enabled for focus maybe?
+
+                // Add a short delay before listening to prevent capturing the click itself if mapped
+                setTimeout(() => {
+                    document.addEventListener('keydown', handleKeydown, true); // Use capture phase
+                }, 50);
+            });
+        });
+
+        // Add ESC key functionality to cancel keybinding
+         document.addEventListener('keydown', (event) => {
+             if (event.key === 'Escape' && listeningButton) {
+                 event.stopPropagation(); // Prevent ESC from closing the options menu immediately
+                 keybindMessage.textContent = 'Atribuição cancelada.';
+                 listeningButton.classList.remove('waiting');
+                 listeningButton.disabled = false;
+                 listeningButton = null;
+                 document.removeEventListener('keydown', handleKeydown, true);
+                 keybindButtons.forEach(btn => btn.disabled = false); // Re-enable all buttons
+                 updateDisplay(); // Restore original text
+             }
+         }, true); // Use capture phase to catch ESC before pauseMenu.js does
+
+        // --- Initial Setup ---
+        updateDisplay(); // Set initial values when the script loads
+
+        // --- TODO: Load/Save Settings ---
+        // Implement functions here to load settings from localStorage on start
+        // and save settings to localStorage whenever a value changes.
+
+     </script>
+</div>
