@@ -1,9 +1,100 @@
-<div id="pauseMenu" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center; flex-direction:column;">
-    <div style="background:#222; padding:32px 48px; border-radius:12px; display:flex; flex-direction:column; gap:20px; align-items:center;">
-        <h2 style="color:#fff;">Pausa</h2>
-        <button id="resumeBtn">Retomar</button>
-        <button id="restartBtn">Reiniciar</button>        <!-- Novo botão -->
-        <button id="optionsBtn">Opções</button>
-        <button id="exitBtn">Sair para Menu</button>
+<div id="pauseMenu" style="
+    display: none; /* Initially hidden */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+    backdrop-filter: blur(5px); /* Blur effect for the background */
+    -webkit-backdrop-filter: blur(5px); /* Safari support */
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: sans-serif; /* Use a clean font */
+">
+    <div style="
+        background: rgba(30, 30, 30, 0.85); /* Darker, semi-transparent background for the menu box */
+        padding: 40px 60px;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 25px; /* Increased gap between elements */
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Soft shadow for depth */
+    ">
+        <h2 style="
+            color: #ffffff;
+            margin: 0 0 10px 0; /* Adjusted margin */
+            font-size: 2em;
+            font-weight: 300; /* Lighter font weight */
+            letter-spacing: 1px;
+        ">Pausa</h2>
+
+        <button id="resumeBtn" style="
+            background: rgba(255, 255, 255, 0.1); /* Transparent background */
+            border: 1px solid rgba(255, 255, 255, 0.5); /* White border */
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition on hover */
+            width: 200px; /* Fixed width for buttons */
+            text-align: center;
+        ">Retomar</button>
+
+        <button id="restartBtn" style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            width: 200px;
+            text-align: center;
+        ">Reiniciar</button>
+
+        <button id="optionsBtn" style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            width: 200px;
+            text-align: center;
+        ">Opções</button>
+
+        <button id="exitBtn" style="
+            background: rgba(255, 80, 80, 0.1); /* Slightly red tint for exit */
+            border: 1px solid rgba(255, 80, 80, 0.5);
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            width: 200px;
+            text-align: center;
+        ">Sair para Menu</button>
     </div>
+
+    <!-- Add CSS for hover effects -->
+    <style>
+        #pauseMenu button:hover {
+            background-color: rgba(255, 255, 255, 0.2) !important; /* Slightly more opaque on hover */
+            border-color: rgba(255, 255, 255, 0.8) !important;
+        }
+        #pauseMenu #exitBtn:hover {
+             background-color: rgba(255, 80, 80, 0.3) !important; /* More red on hover */
+             border-color: rgba(255, 80, 80, 0.8) !important;
+        }
+    </style>
 </div>

@@ -8,10 +8,6 @@ import { setupPauseMenu } from './pauseMenu.js';
 import CheckpointManager from './checkpoints.js';
 import { createTimer } from './timer.js';
 
-// Defina o FPS alvo para o jogo
-const TARGET_FPS = 144; // Altere para 120 ou 144 conforme desejado
-const FIXED = 1 / TARGET_FPS; // Timestep fixo baseado no FPS alvo
-
 // Inicializa o temporizador
 const timer = createTimer();
 timer.start();
@@ -125,7 +121,8 @@ const isPaused = setupPauseMenu((paused) => {
     return true;
 }, renderer.domElement);
 
-// Loop com fixed‐timestep ajustado para TARGET_FPS
+// Loop com fixed‐timestep
+const FIXED = 1 / 60;
 let last = performance.now(),
     acc = 0,
     lastFpsUpdate = 0,
