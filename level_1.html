@@ -32,42 +32,20 @@
     </div>
 
     <!-- Level Complete Menu -->
-    <div id="levelCompleteMenu" style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    ">
-        <div style="
-            background: #222;
-            padding: 32px 48px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            align-items: center;
-            border: 2px solid #fff;
-            color: white;
-        ">
-            <h2 style="color:#fff; margin-bottom: 10px;">Level Complete!</h2>
-            <div id="finalTimeDisplay" style="color: #ffc107; font-size: 20px; margin-bottom: 15px;">
+    <div id="levelCompleteMenu">
+        <div>
+            <h2>Level 1 Complete!</h2>
+            <div id="finalTimeDisplay">
                 Time: --:--:---
             </div>
-            <button id="nextLevelBtn" style="padding: 10px 20px; cursor: pointer;">Next Level</button>
-            <button id="restartLevelBtn" style="padding: 10px 20px; cursor: pointer;">Restart Level</button>
-            <button id="mainMenuBtn" style="padding: 10px 20px; cursor: pointer;">Main Menu</button>
+            <button id="nextLevelBtn">Next Level</button>
+            <button id="restartLevelBtn">Restart Level</button>
+            <button id="mainMenuBtn">Main Menu</button>
         </div>
     </div>
 
     <div id="pauseMenuContainer"></div>
-    <div id="optionsMenuContainer"></div> <!-- Add container for options menu -->
+    <div id="optionsMenuContainer"></div>
 
     <script type="importmap">
         {
