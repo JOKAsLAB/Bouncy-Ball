@@ -5,39 +5,84 @@ import * as CANNON from 'cannon-es';
 export function createScene(world) {
     const scene = createBaseScene();
 
-    const platformMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-    const orangeMaterial = new THREE.MeshStandardMaterial({ color: 0xffa500 });
-    // Gold color for the final checkpoint visual
-    const finalCheckpointMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, transparent: true, opacity: 0.6 });
+    /* --- Texturas (Comentado para usar cores sólidas) ---
+    const textureLoader = new THREE.TextureLoader();
+    const grassTexture = textureLoader.load('assets/textures/grass.jpg');
+    const metalTexture = textureLoader.load('assets/textures/metal_plate.jpg');
+
+    grassTexture.wrapS = THREE.RepeatWrapping;
+    grassTexture.wrapT = THREE.RepeatWrapping;
+    metalTexture.wrapS = THREE.RepeatWrapping;
+    metalTexture.wrapT = THREE.RepeatWrapping;
+    */
+
+    // --- Materiais com Cores Sólidas (Usando MeshPhysicalMaterial) ---
+    const platformMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x228b22,
+        roughness: 0.7,
+        metalness: 0.1
+    });
+    const orangeMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffa500,
+        roughness: 0.5,
+        metalness: 0.2
+    });
+    /* --- Materiais com Texturas (Comentado) ---
+    // Se usares texturas com Physical, podes ajustar roughness/metalness
+    const platformMaterial = new THREE.MeshPhysicalMaterial({ map: grassTexture, roughness: 0.8, metalness: 0.0 });
+    const checkpointPlatformMaterial = new THREE.MeshPhysicalMaterial({ map: metalTexture, roughness: 0.2, metalness: 0.8 });
+    */
+
+    // Gold color for the final checkpoint visual trigger (Invisible)
+    const finalCheckpointMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffd700,
+        roughness: 0.3,
+        metalness: 0.6,
+        transparent: true,
+        opacity: 0 // Tornar invisível
+    });
 
     const platforms = [
-        { position: [0, 1, 0], size: [10, 1, 5], isCheckpoint: true },
+        { position: [0, 1, 0], size: [10, 0.5, 5], isCheckpoint: true },
         { position: [0, 1, 5], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 10], size: [2.5, 0.25, 2.5] },
+        { position: [1, 1, 10], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 15], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 20], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 25], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 30], size: [10, 1, 5], isCheckpoint: true },
-        { position: [0, 1, 35], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 40], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 45], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 50], size: [2.5, 0.25, 2.5] },
+        { position: [1, 1, 20], size: [2.5, 0.25, 2.5] },
+        { position: [-1, 1, 25], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 30], size: [10, 0.5, 5], isCheckpoint: true },
+
+        { position: [2, 1, 35], size: [2.5, 0.25, 2.5] },
+        { position: [-1, 1, 42], size: [2.5, 0.25, 2.5] },
+        { position: [1, 1, 49], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 55], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 60], size: [10, 1, 5], isCheckpoint: true },
+
+        { position: [0, 1, 60], size: [10, 0.5, 5], isCheckpoint: true },
         { position: [0, 1, 65], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 70], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 75], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 80], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 85], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 90], size: [10, 1, 5], isCheckpoint: true, isFinal: true }, // Mark as final
+        { position: [0, 1, 90], size: [10, 0.5, 5], isCheckpoint: true, isFinal: true }, // Mark as final
     ];
 
     platforms.forEach(({ position, size, isCheckpoint, isFinal = false }) => {
         const material = size[0] === 10 ? orangeMaterial : platformMaterial;
 
+        /* --- Ajuste de Textura (Comentado) ---
+        // Ajustar repetição da textura baseado no tamanho da plataforma (opcional, mas recomendado)
+        const textureRepeatX = size[0] / 4; // Ajusta '4' conforme necessário
+        const textureRepeatZ = size[2] / 4; // Ajusta '4' conforme necessário
+        material.map.repeat.set(textureRepeatX, textureRepeatZ);
+        material.map.needsUpdate = true; // Informa Three.js para atualizar a textura
+        */
+
         const geometry = new THREE.BoxGeometry(...size);
         const platform = new THREE.Mesh(geometry, material);
         platform.position.set(...position);
+
+        platform.castShadow = true;
+        platform.receiveShadow = true;
+
         scene.add(platform);
 
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
@@ -48,17 +93,12 @@ export function createScene(world) {
         });
         world.addBody(body);
 
-        // Adiciona listener de colisão para verificar a normal
         body.addEventListener('collide', (event) => {
             const contact = event.contact;
-            const normal = contact.ni; // Normal da colisão (direção perpendicular)
-
-            // Verifica se a colisão é na parte de cima da plataforma
+            const normal = contact.ni;
             if (normal.y > 0.9) {
-                // Permite o salto (colisão válida)
                 event.body.isOnTop = true;
             } else {
-                // Ignora colisões laterais
                 event.body.isOnTop = false;
             }
         });
@@ -66,27 +106,33 @@ export function createScene(world) {
         // Adicionar checkpoint como um cubo invisível
         if (isCheckpoint) {
             const checkpointGeometry = new THREE.BoxGeometry(size[0], 2, size[2]);
-            const checkpointMaterial = isFinal ? finalCheckpointMaterial.clone() : new THREE.MeshStandardMaterial({
-                color: 0xff0000, // Vermelho inicialmente
+            // Usar o material final (já invisível) ou criar um material vermelho invisível
+            const checkpointMaterial = isFinal ? finalCheckpointMaterial.clone() : new THREE.MeshPhysicalMaterial({
+                color: 0xff0000,
+                roughness: 0.9,
+                metalness: 0.0,
                 transparent: true,
-                opacity: 0.5, // Visível para depuração
+                opacity: 0 // Tornar invisível
             });
             const checkpoint = new THREE.Mesh(checkpointGeometry, checkpointMaterial);
             checkpoint.position.set(position[0], position[1] + 1.5, position[2]);
-            checkpoint.isCheckpoint = true; // Identificador para lógica
-            scene.add(checkpoint);
+            checkpoint.isCheckpoint = true;
+            // Não adicionar o mesh visual à cena se for para ser invisível
+            // scene.add(checkpoint); // Comentado ou removido
 
+            // O corpo físico ainda é necessário para a deteção de trigger
             const checkpointShape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, 1, size[2] / 2));
             const checkpointBody = new CANNON.Body({
-                mass: 0, // Sem massa, não afeta a física
+                mass: 0,
                 position: new CANNON.Vec3(position[0], position[1] + 1, position[2]),
                 shape: checkpointShape,
-                collisionResponse: false, // Desativa resposta de colisão
+                collisionResponse: false,
             });
-            checkpointBody.isTrigger = true; // Marcador para lógica de detecção
-            checkpointBody.isCheckpoint = true; // Identificador
-            checkpointBody.isFinalCheckpoint = isFinal; // <-- Add the final flag here
-            checkpointBody.visual = checkpoint; // Referência ao objeto visual
+            checkpointBody.isTrigger = true;
+            checkpointBody.isCheckpoint = true;
+            checkpointBody.isFinalCheckpoint = isFinal;
+            // A referência visual pode ser removida ou mantida, mas o objeto não está na cena
+            checkpointBody.visual = checkpoint;
             world.addBody(checkpointBody);
         }
     });
