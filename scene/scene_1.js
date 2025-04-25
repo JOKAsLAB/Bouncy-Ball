@@ -49,19 +49,19 @@ export function createScene(world) {
         { position: [0, 1, 15], size: [2.5, 0.25, 2.5] },
         { position: [1, 1, 20], size: [2.5, 0.25, 2.5] },
         { position: [-1, 1, 25], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 30], size: [10, 0.5, 5], isCheckpoint: true },
 
+        { position: [0, 1, 30], size: [10, 0.5, 5], isCheckpoint: true },
         { position: [2, 1, 35], size: [2.5, 0.25, 2.5] },
         { position: [-1, 1, 42], size: [2.5, 0.25, 2.5] },
         { position: [1, 1, 49], size: [2.5, 0.25, 2.5] },
         { position: [0, 1, 55], size: [2.5, 0.25, 2.5] },
 
         { position: [0, 1, 60], size: [10, 0.5, 5], isCheckpoint: true },
-        { position: [0, 1, 65], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 70], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 75], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 80], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 85], size: [2.5, 0.25, 2.5] },
+        { position: [1, 1, 65], size: [2.5, 0.25, 2.5] },
+        { position: [-3, 1, 72], size: [2.5, 0.25, 2.5] },
+        { position: [1, 1, 79], size: [2.5, 0.25, 2.5] },
+        { position: [-1, 1, 85], size: [2.5, 0.25, 2.5] },
+        
         { position: [0, 1, 90], size: [10, 0.5, 5], isCheckpoint: true, isFinal: true }, // Mark as final
     ];
 

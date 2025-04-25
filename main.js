@@ -8,6 +8,19 @@ import { setupPauseMenu } from './pauseMenu.js';
 import CheckpointManager from './checkpoints.js';
 import { createTimer } from './timer.js';
 
+// ajuste inicial de pixel ratio
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// Responsividade: redimensiona renderer + camera
+window.addEventListener('resize', onWindowResize);
+function onWindowResize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+}
+
 // Inicializa o temporizador
 const timer = createTimer();
 timer.start();
