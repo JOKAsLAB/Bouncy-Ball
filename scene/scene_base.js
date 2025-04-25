@@ -8,7 +8,7 @@ export function createBaseScene() {
     // --- Carregar HDRI ---
     const rgbeLoader = new RGBELoader();
     rgbeLoader.setPath('assets/sky/'); // Define o caminho para a pasta do HDRI
-    rgbeLoader.load('lonely_road_afternoon_puresky_1k.hdr', function (texture) { // Substitui 'teu_hdri.hdr' pelo nome do teu ficheiro
+    rgbeLoader.load('autumn_field_puresky_1k.hdr', function (texture) { // Substitui 'teu_hdri.hdr' pelo nome do teu ficheiro
         texture.mapping = THREE.EquirectangularReflectionMapping;
 
         scene.background = texture; // Define o HDRI como fundo da cena
@@ -31,7 +31,7 @@ export function createBaseScene() {
 
     // A DirectionalLight ainda pode ser útil para sombras mais definidas.
     // Podemos manter, mas talvez reduzir a intensidade.
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Intensidade reduzida (exemplo)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Intensidade reduzida (exemplo)
     directionalLight.position.set(10, 20, 10);
     directionalLight.castShadow = true;
 
