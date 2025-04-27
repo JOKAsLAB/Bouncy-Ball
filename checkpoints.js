@@ -9,8 +9,38 @@ export default class CheckpointManager {
         this.initialCheckpointSet = false;
         this.levelCompleteCallback = levelCompleteCallback;
         this.completedLevel = false;
+        this.checkpointOpacityState = 0.0; // Estado inicial: 0.0 (invisível)
+        this.allCheckpointVisuals = []; // Array para guardar todos os visuais
 
         this.world.addEventListener('postStep', this._detectCheckpoints.bind(this));
+    }
+
+    // Método para registar um visual de checkpoint (chamar ao criar a cena)
+    registerCheckpointVisual(visual) {
+        if (visual && visual.material) {
+            this.allCheckpointVisuals.push(visual);
+            // Aplicar estado inicial de opacidade
+            visual.material.opacity = this.checkpointOpacityState;
+            visual.material.transparent = this.checkpointOpacityState < 1.0;
+            visual.material.needsUpdate = true;
+        }
+    }
+
+    // Método para alternar a opacidade
+    toggleCheckpointOpacity() {
+        // Alterna entre 0.5 e 0.0
+        this.checkpointOpacityState = (this.checkpointOpacityState === 0.5) ? 0.0 : 0.5;
+        const isTransparent = this.checkpointOpacityState < 1.0;
+        console.log(`Checkpoint opacity set to: ${this.checkpointOpacityState}`);
+
+        // Aplica a nova opacidade a todos os visuais registados
+        this.allCheckpointVisuals.forEach(visual => {
+            if (visual && visual.material) {
+                visual.material.opacity = this.checkpointOpacityState;
+                visual.material.transparent = isTransparent;
+                visual.material.needsUpdate = true;
+            }
+        });
     }
 
     setInitialCheckpoint(initialPosition) {
@@ -66,6 +96,8 @@ export default class CheckpointManager {
     }
 
     _handleCheckpointActivation(body) {
+        const isTransparent = this.checkpointOpacityState < 1.0; // Obter estado de transparência
+
         if (body.isFinalCheckpoint && this.levelCompleteCallback) {
             console.log('Final checkpoint reached!');
             this.completedLevel = true;
@@ -74,12 +106,29 @@ export default class CheckpointManager {
             this.lastCheckpoint.copy(body.position);
             console.log('Checkpoint updated:', this.lastCheckpoint);
 
-            if (this.activeCheckpointVisual) {
-                this.activeCheckpointVisual.material.color.set(0xff0000);
+            // Restaura cor e opacidade do checkpoint anterior
+            if (this.activeCheckpointVisual && this.activeCheckpointVisual.material) {
+                this.activeCheckpointVisual.material.color.set(0xff0000); // Cor inativa
+                this.activeCheckpointVisual.material.opacity = this.checkpointOpacityState;
+                this.activeCheckpointVisual.material.transparent = isTransparent;
+                this.activeCheckpointVisual.material.needsUpdate = true;
             }
+
             this.activeCheckpointVisual = body.visual;
-            if (this.activeCheckpointVisual) {
-                this.activeCheckpointVisual.material.color.set(0x00ff00);
+
+            // Define cor e opacidade do novo checkpoint ativo
+            if (this.activeCheckpointVisual && this.activeCheckpointVisual.material) {
+                this.activeCheckpointVisual.material.color.set(0x00ff00); // Cor ativa
+                this.activeCheckpointVisual.material.opacity = this.checkpointOpacityState;
+                this.activeCheckpointVisual.material.transparent = isTransparent;
+                this.activeCheckpointVisual.material.needsUpdate = true;
+            }
+        } else if (body.visual && body.visual.material && body.visual.material.opacity !== this.checkpointOpacityState) {
+            // Garante que checkpoints não ativos mantêm a opacidade correta (caso tenha mudado)
+            if (body.visual !== this.activeCheckpointVisual) {
+                body.visual.material.opacity = this.checkpointOpacityState;
+                body.visual.material.transparent = isTransparent;
+                body.visual.material.needsUpdate = true;
             }
         }
     }
@@ -90,5 +139,6 @@ export default class CheckpointManager {
 
     destroy() {
         this.world.removeEventListener('postStep', this._detectCheckpoints.bind(this));
+        this.allCheckpointVisuals = []; // Limpa a referência
     }
 }

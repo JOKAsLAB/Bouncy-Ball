@@ -1,22 +1,13 @@
 import { createBaseScene } from './scene_base.js';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js'; // Ajusta o caminho
 
-export function createScene(world) {
+// Aceita world, checkpointManager E groundWallMaterial
+export function createScene(world, checkpointManager, groundWallMaterial) {
     const scene = createBaseScene();
 
-    /* --- Texturas (Comentado para usar cores sólidas) ---
-    const textureLoader = new THREE.TextureLoader();
-    const grassTexture = textureLoader.load('assets/textures/grass.jpg');
-    const metalTexture = textureLoader.load('assets/textures/metal_plate.jpg');
-
-    grassTexture.wrapS = THREE.RepeatWrapping;
-    grassTexture.wrapT = THREE.RepeatWrapping;
-    metalTexture.wrapS = THREE.RepeatWrapping;
-    metalTexture.wrapT = THREE.RepeatWrapping;
-    */
-
-    // --- Materiais com Cores Sólidas (Usando MeshPhysicalMaterial) ---
+    // --- Materiais com Cores Sólidas ---
     const platformMaterial = new THREE.MeshPhysicalMaterial({
         color: 0x228b22,
         roughness: 0.7,
@@ -27,62 +18,56 @@ export function createScene(world) {
         roughness: 0.5,
         metalness: 0.2
     });
-    /* --- Materiais com Texturas (Comentado) ---
-    // Se usares texturas com Physical, podes ajustar roughness/metalness
-    const platformMaterial = new THREE.MeshPhysicalMaterial({ map: grassTexture, roughness: 0.8, metalness: 0.0 });
-    const checkpointPlatformMaterial = new THREE.MeshPhysicalMaterial({ map: metalTexture, roughness: 0.2, metalness: 0.8 });
-    */
 
-    // Gold color for the final checkpoint visual trigger (Invisible)
-    const finalCheckpointMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0xffd700,
+    // Material para checkpoints normais (vermelho por defeito, opacidade controlada pelo manager)
+    const checkpointMaterialBase = new THREE.MeshPhysicalMaterial({
+        color: 0xff0000, // Cor inicial inativa
+        roughness: 0.9,
+        metalness: 0.0,
+        transparent: true, // Precisa ser transparente para opacidade < 1
+        // opacity: 0.5 // Removido - o manager define a opacidade inicial ao registar
+    });
+
+    // Material para o checkpoint final (amarelo, opacidade controlada pelo manager)
+    const finalCheckpointMaterialBase = new THREE.MeshPhysicalMaterial({
+        color: 0xffff00, // Cor final
         roughness: 0.3,
         metalness: 0.6,
-        transparent: true,
-        opacity: 0 // Tornar invisível
+        transparent: true, // Precisa ser transparente para opacidade < 1
+        // opacity: 0.5 // Removido - o manager define a opacidade inicial ao registar
     });
+
 
     const platforms = [
         { position: [0, 1, 0], size: [10, 0.5, 5], isCheckpoint: true },
-        { position: [0, 1, 5], size: [2.5, 0.25, 2.5] },
-        { position: [1, 1, 10], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 15], size: [2.5, 0.25, 2.5] },
-        { position: [1, 1, 20], size: [2.5, 0.25, 2.5] },
-        { position: [-1, 1, 25], size: [2.5, 0.25, 2.5] },
+        { position: [0, 1, 5], size: [2.5, 0.1, 2.5] },
+        { position: [1, 1, 10], size: [2.5, 0.1, 2.5] },
+        { position: [0, 1, 15], size: [2.5, 0.1, 2.5] },
+        { position: [1, 1, 20], size: [2.5, 0.1, 2.5] },
+        { position: [-1, 1, 25], size: [2.5, 0.1, 2.5] },
 
         { position: [0, 1, 30], size: [10, 0.5, 5], isCheckpoint: true },
-        { position: [2, 1, 35], size: [2.5, 0.25, 2.5] },
-        { position: [-1, 1, 42], size: [2.5, 0.25, 2.5] },
-        { position: [1, 1, 49], size: [2.5, 0.25, 2.5] },
-        { position: [0, 1, 55], size: [2.5, 0.25, 2.5] },
+        { position: [2, 1, 35], size: [2.5, 0.1, 2.5] },
+        { position: [-1, 1, 42], size: [2.5, 0.1, 2.5] },
+        { position: [1, 1, 49], size: [2.5, 0.1, 2.5] },
+        { position: [0, 1, 55], size: [2.5, 0.1, 2.5] },
 
         { position: [0, 1, 60], size: [10, 0.5, 5], isCheckpoint: true },
-        { position: [1, 1, 65], size: [2.5, 0.25, 2.5] },
-        { position: [-3, 1, 72], size: [2.5, 0.25, 2.5] },
-        { position: [1, 1, 79], size: [2.5, 0.25, 2.5] },
-        { position: [-1, 1, 85], size: [2.5, 0.25, 2.5] },
-        
+        { position: [1, 1, 65], size: [2.5, 0.1, 2.5] },
+        { position: [-3, 1, 72], size: [2.5, 0.1, 2.5] },
+        { position: [1, 1, 79], size: [2.5, 0.1, 2.5] },
+        { position: [-1, 1, 85], size: [2.5, 0.1, 2.5] },
+
         { position: [0, 1, 90], size: [10, 0.5, 5], isCheckpoint: true, isFinal: true }, // Mark as final
     ];
 
     platforms.forEach(({ position, size, isCheckpoint, isFinal = false }) => {
         const material = size[0] === 10 ? orangeMaterial : platformMaterial;
-
-        /* --- Ajuste de Textura (Comentado) ---
-        // Ajustar repetição da textura baseado no tamanho da plataforma (opcional, mas recomendado)
-        const textureRepeatX = size[0] / 4; // Ajusta '4' conforme necessário
-        const textureRepeatZ = size[2] / 4; // Ajusta '4' conforme necessário
-        material.map.repeat.set(textureRepeatX, textureRepeatZ);
-        material.map.needsUpdate = true; // Informa Three.js para atualizar a textura
-        */
-
         const geometry = new THREE.BoxGeometry(...size);
         const platform = new THREE.Mesh(geometry, material);
         platform.position.set(...position);
-
         platform.castShadow = true;
         platform.receiveShadow = true;
-
         scene.add(platform);
 
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
@@ -90,6 +75,11 @@ export function createScene(world) {
             mass: 0,
             position: new CANNON.Vec3(...position),
             shape: shape,
+            material: groundWallMaterial, // APLICA O MATERIAL AQUI
+            // --- Configuração de Colisão ---
+            collisionFilterGroup: GROUP_GROUND,
+            // O chão colide APENAS com o jogador
+            collisionFilterMask: GROUP_PLAYER
         });
         world.addBody(body);
 
@@ -103,36 +93,40 @@ export function createScene(world) {
             }
         });
 
-        // Adicionar checkpoint como um cubo invisível
+        // Adicionar trigger visual para checkpoint
         if (isCheckpoint) {
-            const checkpointGeometry = new THREE.BoxGeometry(size[0], 2, size[2]);
-            // Usar o material final (já invisível) ou criar um material vermelho invisível
-            const checkpointMaterial = isFinal ? finalCheckpointMaterial.clone() : new THREE.MeshPhysicalMaterial({
-                color: 0xff0000,
-                roughness: 0.9,
-                metalness: 0.0,
-                transparent: true,
-                opacity: 0 // Tornar invisível
-            });
-            const checkpoint = new THREE.Mesh(checkpointGeometry, checkpointMaterial);
-            checkpoint.position.set(position[0], position[1] + 1.5, position[2]);
-            checkpoint.isCheckpoint = true;
-            // Não adicionar o mesh visual à cena se for para ser invisível
-            // scene.add(checkpoint); // Comentado ou removido
+            const checkpointGeometry = new THREE.BoxGeometry(size[0], 2, size[2]); // Geometria do trigger visual
+            // Clona o material base apropriado (normal ou final)
+            const checkpointMaterial = isFinal ? finalCheckpointMaterialBase.clone() : checkpointMaterialBase.clone();
 
-            // O corpo físico ainda é necessário para a deteção de trigger
-            const checkpointShape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, 1, size[2] / 2));
+            const checkpointVisual = new THREE.Mesh(checkpointGeometry, checkpointMaterial);
+            // Posiciona o trigger visual ligeiramente acima da plataforma
+            checkpointVisual.position.set(position[0], position[1] + 1.25, position[2]); // Ajuste a altura Y conforme necessário
+            checkpointVisual.isCheckpointVisual = true; // Marcação opcional
+
+            // ADICIONA O VISUAL À CENA
+            scene.add(checkpointVisual);
+
+            // REGISTA O VISUAL NO MANAGER
+            // O manager vai definir a opacidade inicial correta (0.5 ou 0.0)
+            checkpointManager.registerCheckpointVisual(checkpointVisual);
+
+            // Corpo físico do trigger (sem visual direto, mas com referência)
+            const checkpointShape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, 1, size[2] / 2)); // Tamanho físico do trigger
             const checkpointBody = new CANNON.Body({
                 mass: 0,
+                // Posição física do trigger (pode ser a mesma do visual ou ligeiramente diferente)
                 position: new CANNON.Vec3(position[0], position[1] + 1, position[2]),
                 shape: checkpointShape,
-                collisionResponse: false,
+                isTrigger: true, // Marca como trigger para não ter colisões físicas normais
+                // --- Configuração de Colisão ---
+                collisionFilterGroup: GROUP_CHECKPOINT_TRIGGER,
+                // O trigger "colide" logicamente APENAS com o jogador (para deteção, não física)
+                collisionFilterMask: GROUP_PLAYER
             });
-            checkpointBody.isTrigger = true;
-            checkpointBody.isCheckpoint = true;
+            checkpointBody.isCheckpoint = true; // Marcação para o manager
             checkpointBody.isFinalCheckpoint = isFinal;
-            // A referência visual pode ser removida ou mantida, mas o objeto não está na cena
-            checkpointBody.visual = checkpoint;
+            checkpointBody.visual = checkpointVisual; // Associa o corpo físico ao visual
             world.addBody(checkpointBody);
         }
     });
