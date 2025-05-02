@@ -56,7 +56,7 @@
         gap: 20px; /* Espaço entre botões */
         align-items: center;
     ">
-      <button onclick="window.location.href='level_1.html'" style="
+      <button id="level1Button" style="
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
@@ -69,7 +69,7 @@
             text-align: center;
       ">Level 1</button>
 
-      <button onclick="alert('Level 2 ainda não implementado!')" style=" /* Atualizado para alert */
+      <button id="level2Button" style="
             background: rgba(150, 150, 150, 0.1); /* Cor diferente para desabilitado/não implementado */
             border: 1px solid rgba(150, 150, 150, 0.5);
             color: #aaaaaa; /* Cor de texto mais escura */
@@ -82,7 +82,7 @@
             text-align: center;
       ">Level 2</button>
 
-      <button onclick="alert('Level 3 ainda não implementado!')" style=" /* Atualizado para alert */
+      <button id="level3Button" style="
             background: rgba(150, 150, 150, 0.1);
             border: 1px solid rgba(150, 150, 150, 0.5);
             color: #aaaaaa;
@@ -95,7 +95,7 @@
             text-align: center;
       ">Level 3</button>
 
-      <button class="back-button" onclick="window.location.href='index.html'" style="
+      <button id="backButton" class="back-button" style="
             background: rgba(255, 80, 80, 0.1); /* Tom avermelhado como no botão Sair */
             border: 1px solid rgba(255, 80, 80, 0.5);
             color: #ffffff;
@@ -110,5 +110,51 @@
       ">Voltar</button>
     </div>
   </div>
+
+  <script type="module">
+    import { playMenuClickSound } from './utils/audioUtils.js';
+    
+    const level1Btn = document.getElementById('level1Button');
+    const level2Btn = document.getElementById('level2Button');
+    const level3Btn = document.getElementById('level3Button');
+    const backBtn = document.getElementById('backButton');
+
+    // Remover listeners originais (se existirem)
+    if (level1Btn) {
+        level1Btn.replaceWith(level1Btn.cloneNode(true));
+        const newLevel1Btn = document.getElementById('level1Button');
+        newLevel1Btn.addEventListener('click', () => {
+            playMenuClickSound();
+            setTimeout(() => {
+                window.location.href='level_1.html';
+            }, 200);
+        });
+    }
+    
+    if (level2Btn) {
+        level2Btn.addEventListener('click', () => {
+            // Aqui não precisa de atraso pois o alert() já causa uma pausa
+            alert('Level 2 ainda não implementado!');
+        });
+    }
+    
+    if (level3Btn) {
+        level3Btn.addEventListener('click', () => {
+            // Aqui não precisa de atraso pois o alert() já causa uma pausa
+            alert('Level 3 ainda não implementado!');
+        });
+    }
+    
+    if (backBtn) {
+        backBtn.replaceWith(backBtn.cloneNode(true));
+        const newBackBtn = document.getElementById('backButton');
+        newBackBtn.addEventListener('click', () => {
+            playMenuClickSound();
+            setTimeout(() => {
+                window.location.href='index.html';
+            }, 200);
+        });
+    }
+  </script>
 </body>
 </html>

@@ -52,7 +52,7 @@
         gap: 20px; /* Espaço entre botões */
         align-items: center;
     ">
-      <button onclick="window.location.href='levels.html'" style="
+      <button id="playButton" style="
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
@@ -65,7 +65,7 @@
             text-align: center;
       ">Jogar</button>
 
-      <button onclick="alert('Opções ainda não implementadas!')" style="
+      <button id="optionsButton" style="
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
@@ -78,7 +78,7 @@
             text-align: center;
       ">Opções</button>
 
-      <button onclick="alert('Créditos ainda não implementados!')" style="
+      <button id="creditsButton" style="
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
@@ -92,5 +92,27 @@
       ">Créditos</button>
     </div>
   </div>
+  <script type="module">
+    import { bindMenuSounds } from './utils/menuSoundSetup.js';
+    import { playMenuClickSound } from './utils/audioUtils.js';
+    bindMenuSounds();
+
+    const playBtn = document.getElementById('playButton');
+    if (playBtn) {
+      // Remova o listener original
+      playBtn.replaceWith(playBtn.cloneNode(true));
+      
+      // Adicione nosso novo listener com atraso
+      const newPlayBtn = document.getElementById('playButton');
+      newPlayBtn.addEventListener('click', () => {
+        playMenuClickSound(); // Tocar som explicitamente
+        
+        // Esperar um curto período para o som tocar antes de navegar
+        setTimeout(() => {
+          window.location.href = 'levels.html';
+        }, 200); // 200ms de atraso
+      });
+    }
+  </script>
 </body>
 </html>

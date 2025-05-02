@@ -137,9 +137,20 @@
          }
     </style>
      <script>
+        // Corrige o caminho se optionsMenu.html estiver na raiz
+        const menuClickSound = new Audio('assets/sounds/menu_click.wav'); // <-- REMOVIDO ../
+
+        function playClick() {
+            if (!menuClickSound.paused) {
+                menuClickSound.currentTime = 0;
+            }
+            menuClickSound.play().catch(e => console.error("Audio Error:", e));
+        }
+
         // --- Get Elements ---
         const keybindButtons = document.querySelectorAll('.keybind-button');
         const keybindMessage = document.getElementById('keybindMessage');
+        const backButton = document.getElementById('backToPauseBtn'); // Adicionado para o botão voltar
 
         // --- Default Settings ---
         let settings = {
@@ -204,6 +215,7 @@
 
         keybindButtons.forEach(button => {
             button.addEventListener('click', () => {
+                playClick(); // <-- Adiciona som ao clicar para iniciar a atribuição
                 if (listeningButton) {
                     listeningButton.classList.remove('waiting');
                     listeningButton.disabled = false;
@@ -223,6 +235,18 @@
                 }, 50);
             });
         });
+
+        // Adiciona som ao botão Voltar (se não foi coberto pelo pauseMenu.js)
+        // O listener pode já existir em pauseMenu.js, verifique se há duplicação.
+        // Se o listener em pauseMenu.js já adiciona o som, remova este.
+        /*
+        if (backButton) {
+             backButton.addEventListener('click', () => {
+                 playClick(); // <-- Adiciona som ao Voltar
+                 // A lógica de voltar (showPauseMenu) deve estar no pauseMenu.js
+             });
+        }
+        */
 
          document.addEventListener('keydown', (event) => {
              if (event.key === 'Escape' && listeningButton) {

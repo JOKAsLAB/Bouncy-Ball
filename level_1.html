@@ -63,17 +63,24 @@
             }
         }
     </script>
-    <script type="module" src="./main.js"></script>
-    <script>
-        // Fetch and inject Pause Menu
-        fetch('pauseMenu.html')
-            .then(r => r.text())
-            .then(html => document.getElementById('pauseMenuContainer').innerHTML = html);
 
-        // Fetch and inject Options Menu
-        fetch('optionsMenu.html')
-            .then(r => r.text())
-            .then(html => document.getElementById('optionsMenuContainer').innerHTML = html);
+    <script type="module">
+        async function loadMenusAndStartGame() {
+            const [pauseHtml, optionsHtml] = await Promise.all([
+                fetch('pauseMenu.html').then(r => r.text()),
+                fetch('optionsMenu.html').then(r => r.text())
+            ]);
+            document.getElementById('pauseMenuContainer').innerHTML = pauseHtml;
+            document.getElementById('optionsMenuContainer').innerHTML = optionsHtml;
+
+            // importa e executa o jogo
+            await import('./main.js');
+
+            // liga som a todos os botões
+            const { bindMenuSounds } = await import('./utils/menuSoundSetup.js');
+            bindMenuSounds();
+        }
+        loadMenusAndStartGame();
     </script>
 </body>
 </html>

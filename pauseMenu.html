@@ -98,3 +98,79 @@
         }
     </style>
 </div>
+
+<script type="module">
+    import { playMenuClickSound } from './utils/audioUtils.js'; // <-- Certifique-se que este caminho está correto
+
+    export function setupPauseMenu(onPauseChange, pointerLockElement = document.body) {
+        const pauseMenu   = document.getElementById('pauseMenu');
+        const resumeBtn   = document.getElementById('resumeBtn');
+        const restartBtn  = document.getElementById('restartBtn');
+        const optionsBtn  = document.getElementById('optionsBtn');
+        const exitBtn     = document.getElementById('exitBtn');
+        const optionsMenu = document.getElementById('optionsMenu');
+        const backToPauseBtn = document.getElementById('backToPauseBtn');
+
+        let paused = false;
+
+        function showPauseMenu() {
+            pauseMenu.style.display = 'flex';
+            paused = true;
+        }
+
+        function hidePauseMenu() {
+            pauseMenu.style.display = 'none';
+            paused = false;
+        }
+
+        function showOptionsMenu() {
+            optionsMenu.style.display = 'flex';
+            pauseMenu.style.display = 'none';
+        }
+
+        // Retomar
+        resumeBtn?.addEventListener('click', () => {
+            if (!paused) return;
+            playMenuClickSound(); // <-- Adiciona som
+            hidePauseMenu();
+        });
+
+        // Restart
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                playMenuClickSound(); // Use a mesma função que os outros botões
+                setTimeout(() => {
+                    window.location.reload();
+                }, 200); // Mesmo atraso de 200ms usado em outros botões
+            });
+        } else {
+            console.error('Botão restartBtn não encontrado no DOM');
+        }
+
+        // Opções button in Pause Menu
+        optionsBtn?.addEventListener('click', () => {
+            if (paused) {
+                playMenuClickSound(); // <-- Adiciona som
+                showOptionsMenu();
+            }
+        });
+
+        // Back button in Options Menu
+        backToPauseBtn?.addEventListener('click', () => {
+            if (paused) {
+                playMenuClickSound(); // <-- Adiciona som
+                showPauseMenu();
+            }
+        });
+
+        // Sair para menu
+        exitBtn?.addEventListener('click', () => {
+            playMenuClickSound(); // <-- Adiciona som
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 200); // 200ms de atraso
+        });
+
+        return () => paused;
+    }
+</script>

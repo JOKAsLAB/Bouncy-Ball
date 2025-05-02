@@ -8,6 +8,7 @@ import { setupPauseMenu } from './pauseMenu.js';
 import CheckpointManager from './checkpoints.js';
 import { createTimer } from './timer.js';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from './collisionGroups.js';
+import { playMenuClickSound } from './utils/audioUtils.js'; // <-- Importa a função
 
 // ajuste inicial de pixel ratio
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -40,7 +41,6 @@ if (timerDisplayElement && finalTimeDisplayElement && infoElement && noclipIndic
     infoElement.style.display = 'block'; // Certificar que info está visível inicialmente
     noclipIndicator.style.display = 'none'; // Certificar que noclipIndicator está escondido inicialmente
     timerDisplayElement.textContent = timer.formatTime(0);
-    requestAnimationFrame(animate);
 } else {
     console.error('UI elements not found:', timerDisplayElement, finalTimeDisplayElement, infoElement, noclipIndicator);
 }
@@ -129,7 +129,9 @@ function handleLevelComplete() {
     const restartBtn = document.getElementById('restartLevelBtn');
     const menuBtn = document.getElementById('mainMenuBtn');
 
+    // Adiciona som aos cliques dos botões
     nextBtn.onclick = () => {
+        playMenuClickSound(); // <-- Adiciona som
         if (currentLevelPath.includes('level_1')) {
             window.location.href = 'level_2.html';
         } else if (currentLevelPath.includes('level_2')) {
@@ -141,8 +143,14 @@ function handleLevelComplete() {
             nextBtn.style.opacity = '0.6';
         }
     };
-    restartBtn.onclick = () => { window.location.href = window.location.pathname; };
-    menuBtn.onclick = () => { window.location.href = 'index.html'; };
+    restartBtn.onclick = () => {
+        playMenuClickSound(); // <-- Adiciona som
+        window.location.href = window.location.pathname;
+    };
+    menuBtn.onclick = () => {
+        playMenuClickSound(); // <-- Adiciona som
+        window.location.href = 'index.html';
+    };
 }
 // --- End Level Complete Logic ---
 
@@ -177,35 +185,48 @@ if (currentLevelPath.includes('level_1')) {
 const scene = createScene(world, checkpointManager, groundWallMaterial); // <--- Passa o material
 
 // Pause Menu Setup
-const isPaused = setupPauseMenu((paused) => {
-    if (isLevelComplete) {
-        playerCtrl.enabled = false;
-        return false;
-    }
+let isPausedFn = () => false; // Função padrão segura
 
-    if (paused) {
-        timer.pause();
-        playerCtrl.enabled = false;
-        // Esconder UI ao pausar
-        if (timerDisplayElement) timerDisplayElement.style.display = 'none';
-        if (infoElement) infoElement.style.display = 'none';
-        if (noclipIndicator) noclipIndicator.style.display = 'none'; // Esconder noclipIndicator ao pausar
-    } else {
-        timer.resume();
-        playerCtrl.enabled = true;
-        // Mostrar UI ao resumir, mas apenas se isUiVisible for true
-        if (timerDisplayElement) timerDisplayElement.style.display = isUiVisible ? 'block' : 'none';
-        if (infoElement) infoElement.style.display = isUiVisible ? 'block' : 'none';
-        if (noclipIndicator) {
-            noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none'; // Mostrar noclipIndicator se visível e noclip ativo
+// Função para inicializar o menu de pausa após tudo estar carregado
+function initializePauseMenu() {
+    isPausedFn = setupPauseMenu((paused) => {
+        if (isLevelComplete) {
+            playerCtrl.enabled = false;
+            return false;
         }
-    }
-    return true;
-}, renderer.domElement);
+
+        if (paused) {
+            timer.pause();
+            playerCtrl.enabled = false;
+            // Esconder UI ao pausar
+            if (timerDisplayElement) timerDisplayElement.style.display = 'none';
+            if (infoElement) infoElement.style.display = 'none';
+            if (noclipIndicator) noclipIndicator.style.display = 'none';
+        } else {
+            timer.resume();
+            playerCtrl.enabled = true;
+            // Mostrar UI ao resumir, mas apenas se isUiVisible for true
+            if (timerDisplayElement) timerDisplayElement.style.display = isUiVisible ? 'block' : 'none';
+            if (infoElement) infoElement.style.display = isUiVisible ? 'block' : 'none';
+            if (noclipIndicator) {
+                noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
+            }
+        }
+        return true;
+    }, renderer.domElement);
+}
+
+// Chame esta função APÓS o resto da inicialização
+initializePauseMenu();
+
+// ADICIONE AQUI APÓS todas as inicializações
+if (timerDisplayElement && finalTimeDisplayElement) {
+    requestAnimationFrame(animate);
+}
 
 // --- Event Listeners (UI, Noclip, Checkpoint Opacity) ---
 window.addEventListener('keydown', (event) => {
-    const gameIsPaused = typeof isPaused === 'function' ? isPaused() : false;
+    const gameIsPaused = typeof isPausedFn === 'function' ? isPausedFn() : false;
     if (gameIsPaused || isLevelComplete) return; // Ignora inputs se pausado ou completo
 
     // Toggle UI com '1'
@@ -273,7 +294,7 @@ let last = performance.now(),
 function animate(now) {
     requestAnimationFrame(animate);
 
-    const gameIsPaused = typeof isPaused === 'function' ? isPaused() : false;
+    const gameIsPaused = typeof isPausedFn === 'function' ? isPausedFn() : false;
     const gameShouldUpdate = !gameIsPaused && !isLevelComplete;
 
     const dt = (now - last) / 1000;
