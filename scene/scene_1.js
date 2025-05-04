@@ -6,6 +6,8 @@ import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisi
 // Aceita world, checkpointManager E groundWallMaterial
 export function createScene(world, checkpointManager, groundWallMaterial) {
     const scene = createBaseScene();
+    // Adiciona um array vazio para consistência, mesmo sem plataformas móveis
+    const movingPlatforms = [];
 
     // --- Materiais com Cores Sólidas ---
     const platformMaterial = new THREE.MeshPhysicalMaterial({
@@ -25,7 +27,6 @@ export function createScene(world, checkpointManager, groundWallMaterial) {
         roughness: 0.9,
         metalness: 0.0,
         transparent: true, // Precisa ser transparente para opacidade < 1
-        // opacity: 0.5 // Removido - o manager define a opacidade inicial ao registar
     });
 
     // Material para o checkpoint final (amarelo, opacidade controlada pelo manager)
@@ -34,9 +35,7 @@ export function createScene(world, checkpointManager, groundWallMaterial) {
         roughness: 0.3,
         metalness: 0.6,
         transparent: true, // Precisa ser transparente para opacidade < 1
-        // opacity: 0.5 // Removido - o manager define a opacidade inicial ao registar
     });
-
 
     const platforms = [
         { position: [0, 1, 0], size: [10, 0.5, 5], isCheckpoint: true },
@@ -131,5 +130,5 @@ export function createScene(world, checkpointManager, groundWallMaterial) {
         }
     });
 
-    return scene;
+    return { scene, movingPlatforms }; // Modificado para retornar também movingPlatforms
 }

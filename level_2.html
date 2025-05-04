@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEVEL 2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Timer Display (Top Center) -->
+    <div id="timerDisplay" style="
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 24px;
+        font-family: monospace;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 5px 15px;
+        border-radius: 5px;
+        z-index: 999;
+        display: none;
+    ">
+        00:00:000
+    </div>
+
+    <div id="info" style="background-color: transparent;"> 
+        <span style="color: #FFFFFF; font-size: 2em; text-shadow: 1px 1px 2px black;">LEVEL 2</span><br>
+        <span id="speedometer" style="color: #0011ff; font-size: 1.5em; text-shadow: 1px 1px 2px black;">Speed: 0 u/s</span><br>
+        <span id="fps" style="color: #ff0000; font-size: 1.5em; text-shadow: 1px 1px 2px black;">FPS: 0</span>
+        <span id="noclipIndicator"
+              style="color: #00ff00;
+                     font-size: 1.5em;
+                     text-shadow: 1px 1px 2px black;
+                     display: none;">
+          Noclip ON
+        </span>
+    </div>
+
+    <!-- Level Complete Menu -->
+    <div id="levelCompleteMenu">
+        <div>
+            <h2>Level 2 Complete!</h2>
+            <div id="finalTimeDisplay">
+                Time: --:--:---
+            </div>
+            <button id="nextLevelBtn">Next Level</button>
+            <button id="restartLevelBtn">Restart Level</button>
+            <button id="mainMenuBtn">Main Menu</button>
+        </div>
+    </div>
+
+    <div id="pauseMenuContainer"></div>
+    <div id="optionsMenuContainer"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/",
+                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        async function loadMenusAndStartGame() {
+            const [pauseHtml, optionsHtml] = await Promise.all([
+                fetch('pauseMenu.html').then(r => r.text()),
+                fetch('optionsMenu.html').then(r => r.text())
+            ]);
+            document.getElementById('pauseMenuContainer').innerHTML = pauseHtml;
+            document.getElementById('optionsMenuContainer').innerHTML = optionsHtml;
+
+            // importa e executa o jogo
+            await import('./main.js');
+
+            // liga som a todos os botões
+            const { bindMenuSounds } = await import('./utils/menuSoundSetup.js');
+            bindMenuSounds();
+        }
+        loadMenusAndStartGame();
+    </script>
+</body>
+</html>

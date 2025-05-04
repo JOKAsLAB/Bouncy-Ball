@@ -173,7 +173,7 @@ const currentLevelPath = window.location.pathname;
 // Importa a função createScene específica do nível
 if (currentLevelPath.includes('level_1')) {
     ({ createScene } = await import('./scene/scene_1.js'));
-} else if (currentLevelPath.includes('level_2')) {
+} else if (currentLevelPath.includes('level_2')) { // <--- Já existe!
     ({ createScene } = await import('./scene/scene_2.js'));
 } else if (currentLevelPath.includes('level_3')) {
     ({ createScene } = await import('./scene/scene_3.js'));
@@ -182,7 +182,8 @@ if (currentLevelPath.includes('level_1')) {
 }
 
 // Cria a cena, passando o world, checkpointManager E o material para chão/paredes
-const scene = createScene(world, checkpointManager, groundWallMaterial); // <--- Passa o material
+// Captura a cena e as plataformas móveis
+const { scene, movingPlatforms } = createScene(world, checkpointManager, groundWallMaterial); // <--- Modificado
 
 // Pause Menu Setup
 let isPausedFn = () => false; // Função padrão segura
@@ -301,6 +302,55 @@ function animate(now) {
     last = now;
     acc += dt;
 
+    // --- Atualização das Plataformas Móveis ---
+    if (gameShouldUpdate && movingPlatforms) {
+        const time = now / 1000; // Tempo em segundos
+
+        movingPlatforms.forEach(platform => {
+            const { mesh, body, initialPosition, movement } = platform;
+            const { axis, distance, speed, offset = 0, distanceX, distanceZ } = movement;
+
+            let newPos = initialPosition.clone(); // Começa da posição inicial
+            let currentVelocity = new CANNON.Vec3(0, 0, 0); // Velocidade instantânea
+
+            const angle = time * speed + offset;
+            const displacement = Math.sin(angle) * distance;
+            const velocityFactor = Math.cos(angle) * speed * distance; // Derivada do sin(time*speed)*distance
+
+            if (axis === 'x') {
+                newPos.x += displacement;
+                currentVelocity.x = velocityFactor;
+            } else if (axis === 'y') {
+                newPos.y += displacement;
+                currentVelocity.y = velocityFactor;
+            } else if (axis === 'z') {
+                newPos.z += displacement;
+                currentVelocity.z = velocityFactor;
+            } else if (axis === 'xz') {
+                // Movimento diagonal/circular (exemplo simples com seno)
+                const displacementX = Math.sin(angle) * (distanceX || distance); // Usa distanceX ou distance
+                const displacementZ = Math.cos(angle) * (distanceZ || distance); // Usa distanceZ ou distance (pode ser elíptico)
+                const velocityX = Math.cos(angle) * speed * (distanceX || distance);
+                const velocityZ = -Math.sin(angle) * speed * (distanceZ || distance);
+
+                newPos.x += displacementX;
+                newPos.z += displacementZ;
+                currentVelocity.x = velocityX;
+                currentVelocity.z = velocityZ;
+            }
+
+            // Atualiza a posição do Mesh (Three.js)
+            mesh.position.copy(newPos);
+
+            // Atualiza a posição E a velocidade do Body (Cannon.js)
+            // É importante atualizar a velocidade para que corpos KINEMATIC empurrem corretamente
+            body.position.copy(newPos);
+            body.velocity.copy(currentVelocity);
+        });
+    }
+    // --- Fim da Atualização das Plataformas Móveis ---
+
+
     // Atualiza o display do temporizador (só se estiver visível)
     if (timerDisplayElement && gameShouldUpdate && isUiVisible) {
         timerDisplayElement.textContent = timer.formatTime(timer.getElapsedTime());
@@ -328,6 +378,7 @@ function animate(now) {
     // Physics and Controls Update
     while (acc >= FIXED) {
         if (gameShouldUpdate) {
+            // O world.step usa as posições/velocidades atualizadas dos corpos KINEMATIC
             world.step(FIXED);
             playerCtrl.fixedUpdate(FIXED);
             if (playerBody.position.y < -10) checkpointManager.respawnPlayer(camera, playerCtrl, SPAWN_YAW);
@@ -337,4 +388,9 @@ function animate(now) {
 
     // Renderiza a cena
     renderer.render(scene, camera);
+}
+
+// Inicia o loop
+if (timerDisplayElement && finalTimeDisplayElement) {
+    requestAnimationFrame(animate);
 }
