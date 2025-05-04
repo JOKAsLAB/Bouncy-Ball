@@ -8,7 +8,7 @@ function initAudio() {
   if (audioInitialized) return;
   
   console.log('Inicializando sistema de áudio...');
-  clickSound = new Audio('../assets/sound/menu_click.wav');
+  clickSound = new Audio('../assets/sound/menu_click.mp3');
   clickSound.preload = 'auto';
   audioInitialized = true;
 }
