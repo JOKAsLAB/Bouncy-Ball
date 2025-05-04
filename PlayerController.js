@@ -23,8 +23,11 @@ export default class PlayerController {
         this.keys = {}; 
         this.canJump = false
         this.jumpQueued = false; // novo: para detectar pulo no keydown
-        this.wasOnGround = false; // novo: para detectar transição de chão
+        this.wasOnGround = true; // *** Modificado: Começa como true (assumindo que começa no chão) ***
         this.wallNormal = new CANNON.Vec3(); // Para guardar a normal da parede
+
+        // *** Adiciona propriedade para o som de aterrissagem ***
+        this.landingSound = null;
 
         // noclip
         this.noclip = false;
@@ -33,6 +36,18 @@ export default class PlayerController {
         // guarda o tipo e a resposta a colisões originais
         this._origType = this.body.type;
         this._origCollision = this.body.collisionResponse;
+
+        // *** Carrega o som de aterrissagem ***
+        try {
+            // Certifique-se que o caminho está correto relativo ao HTML (level_1.html)
+            this.landingSound = new Audio('./assets/sound/land_1.mp3');
+            this.landingSound.preload = 'auto';
+            // Opcional: Ajustar volume se necessário
+            this.landingSound.volume = 0.1;
+            console.log("Som de aterrissagem carregado."); // Log para confirmar
+        } catch (error) {
+            console.error("Erro ao carregar som de aterrissagem:", error);
+        }
 
         this._setupPointerLock()
         this._setupKeys()
@@ -153,10 +168,18 @@ export default class PlayerController {
              }
         }
 
-        // Permite pulo só se acabou de tocar no chão
+        // *** Lógica de Aterrissagem e Som ***
+        // Verifica se acabou de aterrar (estava no ar E agora está no chão)
         if (isOnGround && !this.wasOnGround) {
-            this.canJump = true;
+            this.canJump = true; // Permite pulo ao aterrar
+
+            // Toca o som de aterrissagem
+            if (this.landingSound) {
+                this.landingSound.currentTime = 0; // Reinicia o som
+                this.landingSound.play().catch(err => console.error('Erro ao tocar som de aterrissagem:', err));
+            }
         }
+        // Atualiza o estado do chão para o próximo frame *depois* de verificar a transição
         this.wasOnGround = isOnGround;
 
         const forward = new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion).setY(0).normalize();
