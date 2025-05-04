@@ -43,7 +43,7 @@ export default class PlayerController {
             this.landingSound = new Audio('./assets/sound/land_1.mp3');
             this.landingSound.preload = 'auto';
             // Opcional: Ajustar volume se necessário
-            this.landingSound.volume = 0.025;
+            this.landingSound.volume = 0.005;
             console.log("Som de aterrissagem carregado."); // Log para confirmar
         } catch (error) {
             console.error("Erro ao carregar som de aterrissagem:", error);
