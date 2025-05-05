@@ -8,11 +8,15 @@ import { setupPauseMenu } from './pauseMenu.js';
 import CheckpointManager from './checkpoints.js';
 import { createTimer } from './timer.js';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from './collisionGroups.js';
-import { playMenuClickSound } from './utils/audioUtils.js';
+import { playMenuClickSound } from './utils/audioUtils.js'; // <-- Importa a função
 
 // --- Definição da Cena Principal ---
-const scene = new THREE.Scene();
+const scene = new THREE.Scene(); // Defina a cena principal AQUI, antes de tudo
+
+// ajuste inicial de pixel ratio
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// Responsividade: redimensiona renderer + camera
 window.addEventListener('resize', onWindowResize);
 function onWindowResize() {
     const w = window.innerWidth;
@@ -21,118 +25,196 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
 }
+
+// Inicializa o temporizador
 const timer = createTimer();
 timer.start();
+
+// Elementos do DOM relacionados à UI
 const timerDisplayElement = document.getElementById('timerDisplay');
 const finalTimeDisplayElement = document.getElementById('finalTimeDisplay');
-const infoElement = document.getElementById('info');
-const noclipIndicator = document.getElementById('noclipIndicator');
-let isUiVisible = true;
-if (timerDisplayElement) timerDisplayElement.style.display = 'block';
-if (infoElement) infoElement.style.display = 'block';
-if (noclipIndicator) noclipIndicator.style.display = 'none';
-if (timerDisplayElement) timerDisplayElement.textContent = timer.formatTime(0);
+const infoElement = document.getElementById('info'); // Obter referência ao elemento info
+const noclipIndicator = document.getElementById('noclipIndicator'); // Referência ao indicador de noclip
 
+// Estado de visibilidade da UI
+let isUiVisible = true;
+
+if (timerDisplayElement && finalTimeDisplayElement && infoElement && noclipIndicator) {
+    timerDisplayElement.style.display = 'block';
+    infoElement.style.display = 'block'; // Certificar que info está visível inicialmente
+    noclipIndicator.style.display = 'none'; // Certificar que noclipIndicator está escondido inicialmente
+    timerDisplayElement.textContent = timer.formatTime(0);
+} else {
+    console.error('UI elements not found:', timerDisplayElement, finalTimeDisplayElement, infoElement, noclipIndicator);
+}
+
+// Modelo
 const world = new CANNON.World();
 world.gravity.set(0, -9.82, 0);
-const playerMaterial = new CANNON.Material("playerMaterial");
-const groundWallMaterial = new CANNON.Material("groundWallMaterial");
-const playerGroundContactMaterial = new CANNON.ContactMaterial(
-    playerMaterial,
-    groundWallMaterial,
-    { friction: 0.0, restitution: 0.0 }
-);
-world.addContactMaterial(playerGroundContactMaterial);
 
+// --- Materiais Físicos ---
+// Material para o jogador (sem atrito específico aqui, mas pode ter nome)
+const playerMaterial = new CANNON.Material("playerMaterial");
+// Material para as paredes/chão (pode ser o mesmo ou diferente)
+const groundWallMaterial = new CANNON.Material("groundWallMaterial");
+
+// --- Material de Contacto Jogador vs Chão/Paredes ---
+// Define como o jogador interage com o chão/paredes
+const playerGroundContactMaterial = new CANNON.ContactMaterial(
+    playerMaterial,      // Material do jogador
+    groundWallMaterial,  // Material do chão/paredes
+    {
+        friction: 0.0,  // <--- ATRITO ZERO para deslizar
+        restitution: 0.0 // Sem ressalto (bounce)
+    }
+);
+// Adiciona a definição de contacto ao mundo
+world.addContactMaterial(playerGroundContactMaterial);
+// -------------------------
+
+// Passa o material para a função que cria o corpo do jogador
 const playerBody = createPlayerBody(playerMaterial);
+// Adiciona uma propriedade para guardar a normal da parede (se houver)
 playerBody.wallContactNormal = null;
 world.addBody(playerBody);
+
+// Listener de colisão para o jogador
 playerBody.addEventListener('collide', (event) => {
     const contact = event.contact;
-    const contactNormal = contact.ni;
-    if (Math.abs(contactNormal.y) < 0.5) {
-        playerBody.wallContactNormal = contactNormal.clone();
+    const contactNormal = contact.ni; // Normal de contacto no corpo do JOGADOR
+
+    // Verifica se é uma colisão lateral (parede)
+    // Se o componente Y da normal for pequeno (perto de 0), é uma colisão mais horizontal/vertical
+    if (Math.abs(contactNormal.y) < 0.5) { // Ajusta este valor (0.5) se necessário
+        // Verifica se a colisão é CONTRA o jogador (normal aponta para fora do outro objeto)
+        // Se o corpo B for o jogador, usamos ni. Se o corpo A for o jogador, usamos -ni (ou bj.position - bi.position)
+        // Vamos assumir que ni está correto para o corpo do jogador por agora.
+        playerBody.wallContactNormal = contactNormal.clone(); // Guarda a normal da parede
     }
+
+    // Poderíamos também verificar se o outro corpo pertence ao GROUP_GROUND aqui,
+    // mas a verificação da normal Y já filtra a maioria dos casos de chão.
 });
 
 const SPAWN_POS = new CANNON.Vec3(0, 5, 0);
 const SPAWN_YAW = Math.PI;
 
+// --- Level Complete Logic ---
 let isLevelComplete = false;
+
 function handleLevelComplete() {
     if (isLevelComplete) return;
+
     isLevelComplete = true;
     playerCtrl.enabled = false;
     document.exitPointerLock();
+
     const finalElapsedTime = timer.getElapsedTime();
     const finalTimeFormatted = timer.formatTime(finalElapsedTime);
-    if (finalTimeDisplayElement) finalTimeDisplayElement.textContent = `Time: ${finalTimeFormatted}`;
-    if (timerDisplayElement) timerDisplayElement.style.display = 'none';
-    if (infoElement) infoElement.style.display = 'none';
-    if (noclipIndicator) noclipIndicator.style.display = 'none';
+
+    if (finalTimeDisplayElement) {
+        finalTimeDisplayElement.textContent = `Time: ${finalTimeFormatted}`;
+    }
+
+    if (timerDisplayElement) {
+        timerDisplayElement.style.display = 'none';
+    }
+    if (infoElement) { // Esconder info ao completar nível
+        infoElement.style.display = 'none';
+    }
+    if (noclipIndicator) { // Esconder noclipIndicator ao completar nível
+        noclipIndicator.style.display = 'none';
+    }
+
     document.getElementById('levelCompleteMenu').style.display = 'flex';
+
     const nextBtn = document.getElementById('nextLevelBtn');
     const restartBtn = document.getElementById('restartLevelBtn');
     const menuBtn = document.getElementById('mainMenuBtn');
-    const currentLevelPath = window.location.pathname;
+
+    // Adiciona som aos cliques dos botões
     nextBtn.onclick = () => {
-        playMenuClickSound();
+        playMenuClickSound(); // <-- Adiciona som
         if (currentLevelPath.includes('level_1')) {
             window.location.href = 'level_2.html';
         } else if (currentLevelPath.includes('level_2')) {
-            window.location.href = 'level_3.html';
-        } else if (currentLevelPath.includes('level_3')) {
+            window.location.href = 'level_3.html'; // Navigate to level 3 from level 2
+        } else if (currentLevelPath.includes('level_3')) { // Add case for level 3
+            // Option 1: Go back to main menu
             window.location.href = 'index.html';
+            // Option 2: Disable button (as it's the last level for now)
+            // nextBtn.disabled = true;
+            // nextBtn.textContent = 'Main Menu'; // Or 'Last Level'
+            // nextBtn.style.cursor = 'not-allowed';
+            // nextBtn.style.opacity = '0.6';
         } else {
-            window.location.href = 'index.html';
+            // Fallback or handle unexpected currentLevelPath
+             window.location.href = 'index.html';
         }
     };
     restartBtn.onclick = () => {
-        playMenuClickSound();
+        playMenuClickSound(); // <-- Adiciona som
         window.location.href = window.location.pathname;
     };
     menuBtn.onclick = () => {
-        playMenuClickSound();
+        playMenuClickSound(); // <-- Adiciona som
         window.location.href = 'index.html';
     };
 }
+// --- End Level Complete Logic ---
 
+// Inicializa o CheckpointManager
 const checkpointManager = new CheckpointManager(world, playerBody, handleLevelComplete);
 checkpointManager.setInitialCheckpoint(SPAWN_POS);
 
+// Passa o world E o playerBody para o PlayerController
 const playerCtrl = new PlayerController(camera, renderer.domElement, playerBody, world);
+
+// guarda p/ restaurar depois (não obrigatório mas aconselhável)
 const originalCollisionResponse = playerBody.collisionResponse;
+
 checkpointManager.respawnPlayer(camera, playerCtrl, SPAWN_YAW);
 
+// --- Variáveis Globais para Conteúdo do Nível ---
 let gameMovingPlatforms = [];
 let gameMovingLightData = null;
-let sceneUpdater = null;
+let gameSequencedSpotlights = []; // Luzes sequência 1->2 (ordenada)
+let gameRandomSpotlights = [];    // Luzes sequência 2->Fim (ordem aleatória)
 const clock = new THREE.Clock();
 
-let isPausedFn = () => false;
+// Pause Menu Setup
+let isPausedFn = () => false; // Função padrão segura
+
+// Função para inicializar o menu de pausa após tudo estar carregado
 function initializePauseMenu() {
     isPausedFn = setupPauseMenu((paused) => {
         if (isLevelComplete) {
             playerCtrl.enabled = false;
             return false;
         }
+
         if (paused) {
             timer.pause();
             playerCtrl.enabled = false;
+            // Esconder UI ao pausar
             if (timerDisplayElement) timerDisplayElement.style.display = 'none';
             if (infoElement) infoElement.style.display = 'none';
             if (noclipIndicator) noclipIndicator.style.display = 'none';
         } else {
             timer.resume();
             playerCtrl.enabled = true;
+            // Mostrar UI ao resumir, mas apenas se isUiVisible for true
             if (timerDisplayElement) timerDisplayElement.style.display = isUiVisible ? 'block' : 'none';
             if (infoElement) infoElement.style.display = isUiVisible ? 'block' : 'none';
-            if (noclipIndicator) noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
+            if (noclipIndicator) {
+                noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
+            }
         }
         return true;
     }, renderer.domElement);
 }
 
+// --- Scene Loading (Dentro de uma função async auto-invocada) ---
 (async () => {
     let createLevelScene;
     let currentLevelName = window.location.pathname.split('/').pop();
@@ -150,25 +232,47 @@ function initializePauseMenu() {
             throw new Error(`Unknown level HTML file: ${currentLevelName}`);
         }
 
-        const { scene: levelScene, movingPlatforms, movingLightData, updateSectionVisibility } = await createLevelScene(world, checkpointManager, groundWallMaterial);
+        // Usa await para esperar que createLevelScene (que pode ser async) termine
+        const { scene: levelScene, movingPlatforms, movingLightData, sequencedSpotlights, randomSpotlights } = await createLevelScene(world, checkpointManager, groundWallMaterial);
 
-        sceneUpdater = updateSectionVisibility;
+        // Agora, levelScene já deve ter background e environment definidos pelo HDRI
 
-        scene.background = levelScene.background || new THREE.Color(0x000000);
-        scene.environment = levelScene.environment || null;
-        scene.environmentIntensity = levelScene.environmentIntensity !== undefined ? levelScene.environmentIntensity : 0;
+        // Copia o fundo e ambiente (como antes, mas agora deve funcionar)
+        if (levelScene.background) {
+            scene.background = levelScene.background;
+        } else {
+            scene.background = new THREE.Color(0x000000);
+        }
+        if (levelScene.environment) {
+            scene.environment = levelScene.environment;
+        } else {
+            scene.environment = null;
+        }
+        // Copia também a intensidade do ambiente, se definida
+        if (levelScene.environmentIntensity !== undefined) {
+             scene.environmentIntensity = levelScene.environmentIntensity;
+        }
 
+        // Adiciona o conteúdo (objetos filhos) da cena do nível à cena principal
         if (levelScene && levelScene.children) {
-            const childrenToAdd = [...levelScene.children];
-            childrenToAdd.forEach(child => scene.add(child));
+            const childrenToAdd = [...levelScene.children]; // Copia a lista de filhos
+            childrenToAdd.forEach(child => {
+                scene.add(child); // Adiciona cada filho à cena principal
+            });
         } else {
             console.error("levelScene or its children are undefined after loading level.");
         }
 
+        // Guarda os dados das plataformas, luz móvel E AMBAS as sequências de luzes
         gameMovingPlatforms = Array.isArray(movingPlatforms) ? movingPlatforms : [];
         gameMovingLightData = movingLightData;
+        gameSequencedSpotlights = Array.isArray(sequencedSpotlights) ? sequencedSpotlights : [];
+        gameRandomSpotlights = Array.isArray(randomSpotlights) ? randomSpotlights : []; // Guarda as luzes aleatórias
         console.log("Moving light data for this level:", gameMovingLightData);
+        console.log("Sequenced spotlights:", gameSequencedSpotlights);
+        console.log("Random spotlights:", gameRandomSpotlights); // Log das luzes aleatórias
 
+        // Inicializa o menu de pausa e o loop de animação
         initializePauseMenu();
         requestAnimationFrame(animate);
 
@@ -177,86 +281,81 @@ function initializePauseMenu() {
     }
 })();
 
+// --- Event Listeners (UI, Noclip, Checkpoint Opacity) ---
 window.addEventListener('keydown', (event) => {
     const gameIsPaused = typeof isPausedFn === 'function' ? isPausedFn() : false;
-    if (gameIsPaused || isLevelComplete) return;
+    if (gameIsPaused || isLevelComplete) return; // Ignora inputs se pausado ou completo
+
+    // Toggle UI com '1'
     if (event.key === '1') {
         isUiVisible = !isUiVisible;
-        if (timerDisplayElement) timerDisplayElement.style.display = isUiVisible ? 'block' : 'none';
-        if (infoElement) infoElement.style.display = isUiVisible ? 'block' : 'none';
-        if (noclipIndicator) noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
+        // Atualiza a visibilidade dos elementos da UI
+        if (timerDisplayElement) {
+            timerDisplayElement.style.display = isUiVisible ? 'block' : 'none';
+        }
+        if (infoElement) {
+            infoElement.style.display = isUiVisible ? 'block' : 'none';
+        }
+        if (noclipIndicator) {
+            noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
+        }
     }
+
+    // Toggle Noclip com '2'
     if (event.key === '2') {
         const noclipOn = playerCtrl.toggleNoclip();
         playerBody.collisionResponse = !noclipOn;
         if (noclipIndicator) {
             noclipIndicator.textContent = noclipOn ? 'Noclip ON' : '';
+            // Mostra/esconde baseado no estado do noclip E da visibilidade da UI
             noclipIndicator.style.display = (isUiVisible && noclipOn) ? 'block' : 'none';
         }
-        updateSpeedometer();
+        // Atualiza speedometer imediatamente
+        updateSpeedometer(); // Chama a função que atualiza o speedo
     }
+
+    // Toggle Checkpoint Opacity com '3'
     if (event.key === '3') {
         checkpointManager.toggleCheckpointOpacity();
     }
 });
+// --- End Event Listeners ---
 
+// Função separada para atualizar o velocímetro (para reutilização)
 function updateSpeedometer() {
     const speedElement = document.getElementById('speedometer');
-    if (!speedElement || !isUiVisible) return;
+    if (!speedElement || !isUiVisible) return; // Só atualiza se o elemento existe e a UI está visível
 
     let speedText = 'Speed: ...';
-    if (playerCtrl && playerBody) {
-        let speedValue;
-        if (playerCtrl.noclip) {
-            speedValue = (playerCtrl._lastNoclipSpeed || 0);
-        } else {
-            const v = playerBody.velocity;
-            speedValue = Math.sqrt(v.x * v.x + v.z * v.z);
-        }
-        speedText = `Speed: ${speedValue.toFixed(2)} u/s`;
+    if (playerCtrl && playerBody) { // Garante que playerCtrl e playerBody existem
+         let speedValue;
+         if (playerCtrl.noclip) {
+             speedValue = (playerCtrl._lastNoclipSpeed || 0);
+         } else {
+             const v = playerBody.velocity;
+             speedValue = Math.sqrt(v.x * v.x + v.z * v.z);
+         }
+         speedText = `Speed: ${speedValue.toFixed(2)} u/s`;
     }
     speedElement.textContent = speedText;
 }
 
-world.addEventListener('collide', (event) => {
-    const bodyA = event.bodyA;
-    const bodyB = event.bodyB;
-
-    let playerBodyInstance = null;
-    let checkpointBody = null;
-
-    if (bodyA.collisionFilterGroup === GROUP_PLAYER && bodyB.collisionFilterGroup === GROUP_CHECKPOINT_TRIGGER) {
-        playerBodyInstance = bodyA;
-        checkpointBody = bodyB;
-    } else if (bodyB.collisionFilterGroup === GROUP_PLAYER && bodyA.collisionFilterGroup === GROUP_CHECKPOINT_TRIGGER) {
-        playerBodyInstance = bodyB;
-        checkpointBody = bodyA;
-    }
-
-    if (playerBodyInstance && checkpointBody && checkpointBody.isCheckpoint) {
-        if (checkpointBody.checkpointIndex !== undefined) {
-            const reachedIndex = checkpointBody.checkpointIndex;
-
-            const checkpointUpdated = checkpointManager._handleCheckpointActivation(checkpointBody);
-
-            if (sceneUpdater && checkpointUpdated && !checkpointBody.isFinalCheckpoint) {
-                console.log(`Collision with checkpoint ${reachedIndex}. Calling scene updater.`);
-                sceneUpdater(reachedIndex);
-            } else if (sceneUpdater && checkpointUpdated && checkpointBody.isFinalCheckpoint) {
-                console.log(`Collision with final checkpoint ${reachedIndex}. Level complete logic handles visibility.`);
-            }
-        } else {
-            console.warn("Checkpoint body collided but missing checkpointIndex property:", checkpointBody);
-        }
-    }
-});
-
+// Loop com fixed‐timestep
 const FIXED = 1 / 60;
 let last = performance.now(),
     acc = 0,
     lastFpsUpdate = 0,
     frames = 0,
     fps = 0;
+
+// Variáveis para controlar a sequência de luzes ORDENADA
+const sequenceInterval = 0.6; // Intervalo entre luzes para AMBAS as sequências
+let lastSequenceUpdateTime = 0;
+let currentSequenceIndex = -1;
+
+// Variáveis para controlar a sequência de ORDEM ALEATÓRIA
+let lastRandomSequenceUpdateTime = 0; // Tempo da última atualização da sequência aleatória
+let currentRandomIndex = -1;          // Índice da luz atualmente acesa na sequência aleatória
 
 function animate(now) {
     requestAnimationFrame(animate);
@@ -265,50 +364,104 @@ function animate(now) {
     const gameShouldUpdate = !gameIsPaused && !isLevelComplete;
 
     const dt = (now - last) / 1000;
-    const time = clock.getElapsedTime();
+    const time = clock.getElapsedTime(); // Usar clock.getElapsedTime() para consistência
     last = now;
     acc += dt;
 
+    // --- Atualização da Luz Móvel (com caminho) ---
     if (gameShouldUpdate && gameMovingLightData) {
         const { light, pathPoints, speed } = gameMovingLightData;
 
         if (pathPoints && pathPoints.length >= 2) {
-            const firstPoint = pathPoints[0];
-            const lastPoint = pathPoints[pathPoints.length - 1];
+            const firstPoint = pathPoints[0]; // Ponto com menor Z
+            const lastPoint = pathPoints[pathPoints.length - 1]; // Ponto com maior Z
             const totalZLength = lastPoint.z - firstPoint.z;
 
-            const normalizedPosition = (Math.sin(time * speed) + 1) / 2;
+            // Calcula a posição Z alvo usando oscilação seno
+            const normalizedPosition = (Math.sin(time * speed) + 1) / 2; // Varia entre 0 e 1
 
+            // Inverte a direção: começa no fim (lastPoint.z) e subtrai
             const currentZ = lastPoint.z - normalizedPosition * totalZLength;
 
+            // Encontra o segmento do caminho (p1, p2) onde currentZ se encontra
             let p1 = firstPoint;
             let p2 = lastPoint;
             for (let i = 0; i < pathPoints.length - 1; i++) {
                 if (currentZ <= pathPoints[i + 1].z && currentZ >= pathPoints[i].z) {
-                    p1 = pathPoints[i];
-                    p2 = pathPoints[i + 1];
-                    break;
-                } else if (i === 0 && currentZ < pathPoints[i].z) {
-                    p1 = pathPoints[i];
-                    p2 = pathPoints[i];
-                    break;
-                }
+                     p1 = pathPoints[i];
+                     p2 = pathPoints[i + 1];
+                     break;
+                 } else if (i === 0 && currentZ < pathPoints[i].z) {
+                     p1 = pathPoints[i];
+                     p2 = pathPoints[i];
+                     break;
+                 }
             }
 
+            // Interpola a posição X baseado na progressão Z dentro do segmento
             let currentX = p1.x;
             const segmentZLength = p2.z - p1.z;
             if (segmentZLength > 0.001) {
                 const t = (currentZ - p1.z) / segmentZLength;
                 currentX = p1.x + t * (p2.x - p1.x);
             } else {
-                currentX = p1.x;
+                 currentX = p1.x;
             }
 
+            // Atualiza a posição da luz
             light.position.z = currentZ;
             light.position.x = currentX;
         }
     }
+    // --- Fim da Atualização da Luz Móvel ---
 
+    // --- Lógica da Sequência de Luzes ORDENADA (1->2) ---
+    if (gameShouldUpdate && gameSequencedSpotlights.length > 0) {
+        if (time - lastSequenceUpdateTime >= sequenceInterval) {
+            // Apaga a luz anterior (se houver)
+            if (currentSequenceIndex >= 0) {
+                gameSequencedSpotlights[currentSequenceIndex].visible = false;
+            }
+            // Calcula o próximo índice sequencialmente
+            currentSequenceIndex = (currentSequenceIndex + 1) % gameSequencedSpotlights.length;
+            // Acende a nova luz
+            gameSequencedSpotlights[currentSequenceIndex].visible = true;
+            // Atualiza o tempo da última mudança
+            lastSequenceUpdateTime = time;
+        }
+    }
+    // --- Fim Lógica da Sequência Ordenada ---
+
+    // --- Lógica da Sequência de ORDEM ALEATÓRIA (2->Fim) ---
+    if (gameShouldUpdate && gameRandomSpotlights.length > 0) {
+        // Verifica se passou o intervalo para mudar de luz
+        if (time - lastRandomSequenceUpdateTime >= sequenceInterval) {
+            // Apaga a luz anterior (se houver)
+            if (currentRandomIndex >= 0) {
+                gameRandomSpotlights[currentRandomIndex].visible = false;
+            }
+
+            // Escolhe o PRÓXIMO índice aleatoriamente
+            let nextRandomIndex;
+            if (gameRandomSpotlights.length === 1) {
+                nextRandomIndex = 0; // Se só houver uma luz, é sempre essa
+            } else {
+                do {
+                    nextRandomIndex = Math.floor(Math.random() * gameRandomSpotlights.length);
+                } while (nextRandomIndex === currentRandomIndex); // Garante que o próximo índice é DIFERENTE do atual
+            }
+
+            // Acende a nova luz escolhida aleatoriamente
+            gameRandomSpotlights[nextRandomIndex].visible = true;
+
+            // Atualiza o índice atual e o tempo da última mudança
+            currentRandomIndex = nextRandomIndex;
+            lastRandomSequenceUpdateTime = time;
+        }
+    }
+    // --- Fim Lógica da Sequência de Ordem Aleatória ---
+
+    // --- Atualização das Plataformas Móveis ---
     if (gameShouldUpdate && gameMovingPlatforms) {
         gameMovingPlatforms.forEach(platform => {
             const { mesh, body, initialPosition, movement } = platform;
@@ -347,11 +500,14 @@ function animate(now) {
             body.velocity.copy(currentVelocity);
         });
     }
+    // --- Fim da Atualização das Plataformas Móveis ---
 
+    // Atualiza o display do temporizador (só se estiver visível)
     if (timerDisplayElement && gameShouldUpdate && isUiVisible) {
         timerDisplayElement.textContent = timer.formatTime(timer.getElapsedTime());
     }
 
+    // FPS counter (só atualiza o texto se estiver visível)
     frames++;
     if (now - lastFpsUpdate > 500) {
         fps = Math.round((frames * 1000) / (now - lastFpsUpdate));
@@ -361,6 +517,7 @@ function animate(now) {
         if (fpsElement && isUiVisible) fpsElement.textContent = `FPS: ${fps}`;
     }
 
+    // Speedometer (agora chama a função separada)
     if (gameShouldUpdate && isUiVisible) {
         updateSpeedometer();
     } else if (isUiVisible) {
@@ -368,9 +525,9 @@ function animate(now) {
         if (speedElement) speedElement.textContent = 'Speed: 0.00 u/s';
     }
 
+    // Physics and Controls Update
     while (acc >= FIXED) {
         if (gameShouldUpdate) {
-            playerBody.wallContactNormal = null;
             world.step(FIXED);
             playerCtrl.fixedUpdate(FIXED);
             if (playerBody.position.y < -10) checkpointManager.respawnPlayer(camera, playerCtrl, SPAWN_YAW);
@@ -378,9 +535,11 @@ function animate(now) {
         acc -= FIXED;
     }
 
+    // Renderiza a cena
     renderer.render(scene, camera);
 }
 
+// Inicia o loop
 if (timerDisplayElement && finalTimeDisplayElement) {
     requestAnimationFrame(animate);
 }
