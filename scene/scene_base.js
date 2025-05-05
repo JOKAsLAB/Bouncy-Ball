@@ -1,54 +1,57 @@
 import * as THREE from 'three';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'; // Importa o loader para .hdr
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
-// Accept hdriFilename as an argument
+// Agora retorna uma Promise que resolve com a cena configurada
 export function createBaseScene(hdriFilename) {
-    const scene = new THREE.Scene();
-    // scene.background = new THREE.Color(0x87ceeb); // Remove ou comenta a cor de fundo sólida
+    // Retorna uma nova Promise
+    return new Promise((resolve, reject) => {
+        const scene = new THREE.Scene();
 
-    // --- Carregar HDRI ---
-    const rgbeLoader = new RGBELoader();
-    rgbeLoader.setPath('assets/sky/'); // Define o caminho para a pasta do HDRI
-    // Use the provided hdriFilename argument
-    rgbeLoader.load(hdriFilename, function (texture) { // Substitui 'teu_hdri.hdr' pelo nome do teu ficheiro
-        texture.mapping = THREE.EquirectangularReflectionMapping;
+        // --- Carregar HDRI ---
+        const rgbeLoader = new RGBELoader();
+        rgbeLoader.setPath('assets/sky/');
+        rgbeLoader.load(hdriFilename, function (texture) {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
 
-        scene.background = texture; // Define o HDRI como fundo da cena
-        scene.environment = texture; // Define o HDRI para iluminação e reflexos PBR
+            scene.background = texture;
+            scene.environment = texture;
 
-        console.log(`HDRI '${hdriFilename}' carregado e aplicado na cena base.`);
+            console.log(`HDRI '${hdriFilename}' carregado e aplicado na cena base.`);
 
-        // Ajusta a intensidade da iluminação do ambiente HDRI
-        scene.environmentIntensity = 0.1; // Experimenta valores < 1 (ex: 0.7, 0.5, etc.)
+            // --- AJUSTE IMPORTANTE ---
+            // Aumenta a intensidade para que a iluminação seja visível
+            scene.environmentIntensity = 0.8; // <<-- Use um valor maior, como 0.8 ou 1.0
+            // --- FIM DO AJUSTE ---
 
-    }, undefined, function (error) {
-        console.error(`Erro ao carregar o HDRI '${hdriFilename}' na cena base:`, error);
+            // --- Luzes ---
+            // Adiciona as luzes DEPOIS que o HDRI foi carregado (opcional, mas bom local)
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+
+            // Configurações de sombra mantidas
+            directionalLight.shadow.mapSize.width = 1024;
+            directionalLight.shadow.mapSize.height = 1024;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 50;
+            directionalLight.shadow.camera.left = -20;
+            directionalLight.shadow.camera.right = 20;
+            directionalLight.shadow.camera.top = 20;
+            directionalLight.shadow.camera.bottom = -20;
+
+            scene.add(directionalLight);
+
+            // Resolve a Promise com a cena configurada QUANDO o HDRI estiver pronto
+            resolve(scene);
+
+        }, undefined, function (error) {
+            console.error(`Erro ao carregar o HDRI '${hdriFilename}' na cena base:`, error);
+            // Rejeita a Promise em caso de erro
+            reject(error);
+        });
+        // --- Fim Carregar HDRI ---
+
+        // Nota: As luzes foram movidas para dentro do callback do loader
+        // para garantir que a cena retornada pela Promise está completa.
     });
-    // --- Fim Carregar HDRI ---
-
-    // --- Luzes (Ajustar ou Remover) ---
-    // Como o HDRI fornece iluminação ambiente, podemos remover ou reduzir a AmbientLight
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    // scene.add(ambientLight); // Comentado/Removido
-
-    // A DirectionalLight ainda pode ser útil para sombras mais definidas.
-    // Podemos manter, mas talvez reduzir a intensidade.
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Intensidade reduzida (exemplo)
-    directionalLight.position.set(10, 20, 10);
-    directionalLight.castShadow = true;
-
-    // Configurações de sombra mantidas
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 50;
-    directionalLight.shadow.camera.left = -20;
-    directionalLight.shadow.camera.right = 20;
-    directionalLight.shadow.camera.top = 20;
-    directionalLight.shadow.camera.bottom = -20;
-
-    scene.add(directionalLight);
-    // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera));
-
-    return scene;
 }

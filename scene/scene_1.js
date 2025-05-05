@@ -1,13 +1,12 @@
 import { createBaseScene } from './scene_base.js';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js'; // Ajusta o caminho
+import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
-// Aceita world, checkpointManager E groundWallMaterial
-export function createScene(world, checkpointManager, groundWallMaterial) {
-    // Pass the specific HDRI filename for Level 1
-    const scene = createBaseScene('autumn_field_puresky_1k.hdr');
-    // Adiciona um array vazio para consistência, mesmo sem plataformas móveis
+// Torna a função async
+export async function createScene(world, checkpointManager, groundWallMaterial) {
+    // Usa await para esperar pela Promise de createBaseScene
+    const scene = await createBaseScene('autumn_field_puresky_1k.hdr');
     const movingPlatforms = [];
 
     // --- Materiais com Cores Sólidas ---
@@ -68,7 +67,7 @@ export function createScene(world, checkpointManager, groundWallMaterial) {
         platform.position.set(...position);
         platform.castShadow = true;
         platform.receiveShadow = true;
-        scene.add(platform);
+        scene.add(platform); // Adiciona à cena correta
 
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
         const body = new CANNON.Body({
@@ -105,7 +104,7 @@ export function createScene(world, checkpointManager, groundWallMaterial) {
             checkpointVisual.isCheckpointVisual = true; // Marcação opcional
 
             // ADICIONA O VISUAL À CENA
-            scene.add(checkpointVisual);
+            scene.add(checkpointVisual); // Adiciona à cena correta
 
             // REGISTA O VISUAL NO MANAGER
             // O manager vai definir a opacidade inicial correta (0.5 ou 0.0)
@@ -131,5 +130,6 @@ export function createScene(world, checkpointManager, groundWallMaterial) {
         }
     });
 
-    return { scene, movingPlatforms }; // Modificado para retornar também movingPlatforms
+    // Retorna a cena (já com HDRI) e as plataformas
+    return { scene, movingPlatforms };
 }

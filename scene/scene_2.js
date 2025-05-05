@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
-// Aceita world, checkpointManager E groundWallMaterial
-export function createScene(world, checkpointManager, groundWallMaterial) {
-    // Pass the specific HDRI filename for Level 2
-    const scene = createBaseScene('kloofendal_48d_partly_cloudy_puresky_1k.hdr');
+// Torna a função async
+export async function createScene(world, checkpointManager, groundWallMaterial) {
+    // Usa await para esperar pela Promise de createBaseScene
+    const scene = await createBaseScene('kloofendal_48d_partly_cloudy_puresky_1k.hdr');
     const movingPlatforms = []; // Array para guardar dados das plataformas móveis
 
     // --- Materiais ---
