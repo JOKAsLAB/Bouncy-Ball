@@ -5,7 +5,8 @@ import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisi
 
 // Aceita world, checkpointManager E groundWallMaterial
 export function createScene(world, checkpointManager, groundWallMaterial) {
-    const scene = createBaseScene();
+    // Pass the specific HDRI filename for Level 2
+    const scene = createBaseScene('kloofendal_48d_partly_cloudy_puresky_1k.hdr');
     const movingPlatforms = []; // Array para guardar dados das plataformas móveis
 
     // --- Materiais ---

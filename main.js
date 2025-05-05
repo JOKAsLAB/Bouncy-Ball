@@ -135,12 +135,18 @@ function handleLevelComplete() {
         if (currentLevelPath.includes('level_1')) {
             window.location.href = 'level_2.html';
         } else if (currentLevelPath.includes('level_2')) {
-            window.location.href = 'level_3.html';
+            window.location.href = 'level_3.html'; // Navigate to level 3 from level 2
+        } else if (currentLevelPath.includes('level_3')) { // Add case for level 3
+            // Option 1: Go back to main menu
+            window.location.href = 'index.html';
+            // Option 2: Disable button (as it's the last level for now)
+            // nextBtn.disabled = true;
+            // nextBtn.textContent = 'Main Menu'; // Or 'Last Level'
+            // nextBtn.style.cursor = 'not-allowed';
+            // nextBtn.style.opacity = '0.6';
         } else {
-            nextBtn.disabled = true;
-            nextBtn.textContent = 'Last Level';
-            nextBtn.style.cursor = 'not-allowed';
-            nextBtn.style.opacity = '0.6';
+            // Fallback or handle unexpected currentLevelPath
+             window.location.href = 'index.html';
         }
     };
     restartBtn.onclick = () => {
@@ -166,24 +172,33 @@ const originalCollisionResponse = playerBody.collisionResponse;
 
 checkpointManager.respawnPlayer(camera, playerCtrl, SPAWN_YAW);
 
-// Detecta o nível pelo nome do HTML
-let createScene;
-const currentLevelPath = window.location.pathname;
+// --- Scene Loading ---
+let createLevelScene;
+let currentLevelName = window.location.pathname.split('/').pop(); // e.g., "level_1.html"
+const currentLevelPath = window.location.pathname; // Keep this for level complete logic
 
 // Importa a função createScene específica do nível
-if (currentLevelPath.includes('level_1')) {
-    ({ createScene } = await import('./scene/scene_1.js'));
-} else if (currentLevelPath.includes('level_2')) { // <--- Já existe!
-    ({ createScene } = await import('./scene/scene_2.js'));
-} else if (currentLevelPath.includes('level_3')) {
-    ({ createScene } = await import('./scene/scene_3.js'));
-} else {
-    ({ createScene } = await import('./scene/scene_0.js')); // Default para Level 0
+if (currentLevelPath.includes('level_1.html')) {
+    ({ createScene: createLevelScene } = await import('./scene/scene_1.js'));
+    console.log("Level 1 scene module loaded.");
+} else if (currentLevelPath.includes('level_2.html')) {
+    ({ createScene: createLevelScene } = await import('./scene/scene_2.js'));
+    console.log("Level 2 scene module loaded.");
+} else if (currentLevelPath.includes('level_3.html')) { // Ensure this case exists
+    ({ createScene: createLevelScene } = await import('./scene/scene_3.js'));
+    console.log("Level 3 scene module loaded.");
+}
+ else {
+    console.error("Unknown level HTML file:", currentLevelName);
+    // Optionally load a default scene or show an error
+    // ({ createScene: createLevelScene } = await import('./scene/scene_1.js')); // Default to level 1?
+    // For now, let's throw an error if the level is unknown and not default
+    throw new Error(`Unknown level HTML file: ${currentLevelName}`);
 }
 
 // Cria a cena, passando o world, checkpointManager E o material para chão/paredes
 // Captura a cena e as plataformas móveis
-const { scene, movingPlatforms } = createScene(world, checkpointManager, groundWallMaterial); // <--- Modificado
+const { scene, movingPlatforms } = createLevelScene(world, checkpointManager, groundWallMaterial); // <--- Modificado
 
 // Pause Menu Setup
 let isPausedFn = () => false; // Função padrão segura

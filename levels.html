@@ -83,12 +83,12 @@
       ">Level 2</button>
 
       <button id="level3Button" style="
-            background: rgba(150, 150, 150, 0.1);
-            border: 1px solid rgba(150, 150, 150, 0.5);
-            color: #aaaaaa;
+            background: rgba(255, 255, 255, 0.1); /* Make it look like other buttons */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
             padding: 12px 25px;
             border-radius: 8px;
-            cursor: not-allowed;
+            cursor: pointer; /* Enable cursor */
             font-size: 1.1em;
             transition: background-color 0.3s ease, border-color 0.3s ease;
             width: 220px;
@@ -116,47 +116,48 @@
     
     const level1Btn = document.getElementById('level1Button');
     const level2Btn = document.getElementById('level2Button');
-    const level3Btn = document.getElementById('level3Button');
+    const level3Btn = document.getElementById('level3Button'); // Get the button
     const backBtn = document.getElementById('backButton');
 
-    // Remover listeners originais (se existirem)
+    // --- Level 1 Button ---
     if (level1Btn) {
         level1Btn.replaceWith(level1Btn.cloneNode(true));
         const newLevel1Btn = document.getElementById('level1Button');
         newLevel1Btn.addEventListener('click', () => {
             playMenuClickSound();
-            setTimeout(() => {
-                window.location.href='level_1.html';
-            }, 200);
+            setTimeout(() => { window.location.href='level_1.html'; }, 200);
         });
     }
-    
+
+    // --- Level 2 Button ---
     if (level2Btn) {
         level2Btn.replaceWith(level2Btn.cloneNode(true));
         const newLevel2Btn = document.getElementById('level2Button');
         newLevel2Btn.addEventListener('click', () => {
             playMenuClickSound();
+            setTimeout(() => { window.location.href='level_2.html'; }, 200);
+        });
+    }
+
+    // --- Level 3 Button --- Make it functional
+    if (level3Btn) {
+        level3Btn.replaceWith(level3Btn.cloneNode(true)); // Clone to remove old listeners if any
+        const newLevel3Btn = document.getElementById('level3Button');
+        newLevel3Btn.addEventListener('click', () => {
+            playMenuClickSound();
             setTimeout(() => {
-                window.location.href='level_2.html';
+                window.location.href='level_3.html'; // Navigate to level_3.html
             }, 200);
         });
     }
-    
-    if (level3Btn) {
-        level3Btn.addEventListener('click', () => {
-            // Aqui não precisa de atraso pois o alert() já causa uma pausa
-            alert('Level 3 ainda não implementado!');
-        });
-    }
-    
+
+    // --- Back Button ---
     if (backBtn) {
         backBtn.replaceWith(backBtn.cloneNode(true));
         const newBackBtn = document.getElementById('backButton');
         newBackBtn.addEventListener('click', () => {
             playMenuClickSound();
-            setTimeout(() => {
-                window.location.href='index.html';
-            }, 200);
+            setTimeout(() => { window.location.href='index.html'; }, 200);
         });
     }
   </script>

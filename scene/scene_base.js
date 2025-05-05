@@ -1,26 +1,28 @@
 import * as THREE from 'three';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js'; // Importa o loader para .hdr
 
-export function createBaseScene() {
+// Accept hdriFilename as an argument
+export function createBaseScene(hdriFilename) {
     const scene = new THREE.Scene();
     // scene.background = new THREE.Color(0x87ceeb); // Remove ou comenta a cor de fundo sólida
 
     // --- Carregar HDRI ---
     const rgbeLoader = new RGBELoader();
     rgbeLoader.setPath('assets/sky/'); // Define o caminho para a pasta do HDRI
-    rgbeLoader.load('autumn_field_puresky_1k.hdr', function (texture) { // Substitui 'teu_hdri.hdr' pelo nome do teu ficheiro
+    // Use the provided hdriFilename argument
+    rgbeLoader.load(hdriFilename, function (texture) { // Substitui 'teu_hdri.hdr' pelo nome do teu ficheiro
         texture.mapping = THREE.EquirectangularReflectionMapping;
 
         scene.background = texture; // Define o HDRI como fundo da cena
         scene.environment = texture; // Define o HDRI para iluminação e reflexos PBR
 
-        console.log("HDRI carregado e aplicado na cena base.");
+        console.log(`HDRI '${hdriFilename}' carregado e aplicado na cena base.`);
 
         // Ajusta a intensidade da iluminação do ambiente HDRI
         scene.environmentIntensity = 0.1; // Experimenta valores < 1 (ex: 0.7, 0.5, etc.)
 
     }, undefined, function (error) {
-        console.error('Erro ao carregar o HDRI na cena base:', error);
+        console.error(`Erro ao carregar o HDRI '${hdriFilename}' na cena base:`, error);
     });
     // --- Fim Carregar HDRI ---
 
