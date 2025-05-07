@@ -10,6 +10,8 @@ import { createTimer } from './timer.js';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from './collisionGroups.js';
 import { playMenuClickSound } from './utils/audioUtils.js'; // <-- Importa a função
 
+let currentLevelPath; // Declarar currentLevelPath num escopo mais alto
+
 // --- Definição da Cena Principal ---
 const scene = new THREE.Scene(); // Defina a cena principal AQUI, antes de tudo
 
@@ -135,20 +137,15 @@ function handleLevelComplete() {
     // Adiciona som aos cliques dos botões
     nextBtn.onclick = () => {
         playMenuClickSound(); // <-- Adiciona som
-        if (currentLevelPath.includes('level_1')) {
+        if (currentLevelPath && currentLevelPath.includes('level_1.html')) {
             window.location.href = 'level_2.html';
-        } else if (currentLevelPath.includes('level_2')) {
+        } else if (currentLevelPath && currentLevelPath.includes('level_2.html')) {
             window.location.href = 'level_3.html'; // Navigate to level 3 from level 2
-        } else if (currentLevelPath.includes('level_3')) { // Add case for level 3
-            // Option 1: Go back to main menu
+        } else if (currentLevelPath && currentLevelPath.includes('level_3.html')) { // Add case for level 3
             window.location.href = 'index.html';
-            // Option 2: Disable button (as it's the last level for now)
-            // nextBtn.disabled = true;
-            // nextBtn.textContent = 'Main Menu'; // Or 'Last Level'
-            // nextBtn.style.cursor = 'not-allowed';
-            // nextBtn.style.opacity = '0.6';
         } else {
             // Fallback or handle unexpected currentLevelPath
+             console.warn('Could not determine next level from path:', currentLevelPath, 'Navigating to main menu.');
              window.location.href = 'index.html';
         }
     };
@@ -218,7 +215,7 @@ function initializePauseMenu() {
 (async () => {
     let createLevelScene;
     let currentLevelName = window.location.pathname.split('/').pop();
-    const currentLevelPath = window.location.pathname;
+    currentLevelPath = window.location.pathname; // Atribuir à variável de escopo superior
 
     try {
         if (currentLevelPath.includes('level_1.html')) {
