@@ -354,6 +354,8 @@ let currentSequenceIndex = -1;
 let lastRandomSequenceUpdateTime = 0; // Tempo da última atualização da sequência aleatória
 let currentRandomIndex = -1;          // Índice da luz atualmente acesa na sequência aleatória
 
+let time = 0; // Variável para controlar a animação da cor
+
 function animate(now) {
     requestAnimationFrame(animate);
 
@@ -361,26 +363,23 @@ function animate(now) {
     const gameShouldUpdate = !gameIsPaused && !isLevelComplete;
 
     const dt = (now - last) / 1000;
-    const time = clock.getElapsedTime(); // Usar clock.getElapsedTime() para consistência
+    time = now; // 'time' já está sendo usado para a cor da movingLight
+    const elapsedTime = clock.getElapsedTime(); 
     last = now;
     acc += dt;
+
+    let currentHue, saturation, lightness; // Declarar aqui para acesso em múltiplos blocos
 
     // --- Atualização da Luz Móvel (com caminho) ---
     if (gameShouldUpdate && gameMovingLightData) {
         const { light, pathPoints, speed } = gameMovingLightData;
 
         if (pathPoints && pathPoints.length >= 2) {
-            const firstPoint = pathPoints[0]; // Ponto com menor Z
-            const lastPoint = pathPoints[pathPoints.length - 1]; // Ponto com maior Z
+            const firstPoint = pathPoints[0]; 
+            const lastPoint = pathPoints[pathPoints.length - 1]; 
             const totalZLength = lastPoint.z - firstPoint.z;
-
-            // Calcula a posição Z alvo usando oscilação seno
-            const normalizedPosition = (Math.sin(time * speed) + 1) / 2; // Varia entre 0 e 1
-
-            // Inverte a direção: começa no fim (lastPoint.z) e subtrai
+            const normalizedPosition = (Math.sin(elapsedTime * speed) + 1) / 2; 
             const currentZ = lastPoint.z - normalizedPosition * totalZLength;
-
-            // Encontra o segmento do caminho (p1, p2) onde currentZ se encontra
             let p1 = firstPoint;
             let p2 = lastPoint;
             for (let i = 0; i < pathPoints.length - 1; i++) {
@@ -394,8 +393,6 @@ function animate(now) {
                      break;
                  }
             }
-
-            // Interpola a posição X baseado na progressão Z dentro do segmento
             let currentX = p1.x;
             const segmentZLength = p2.z - p1.z;
             if (segmentZLength > 0.001) {
@@ -404,56 +401,67 @@ function animate(now) {
             } else {
                  currentX = p1.x;
             }
-
-            // Atualiza a posição da luz
             light.position.z = currentZ;
             light.position.x = currentX;
+
+            // Lógica para mudar a cor da luz (calculada aqui para ser usada por todas as luzes)
+            const hueSpeed = 0.1; 
+            saturation = 1.0; 
+            lightness = 0.5;  
+            currentHue = ((time / 1000) * hueSpeed) % 1; 
+
+            light.color.setHSL(currentHue, saturation, lightness);
+
+            if (gameMovingLightData.visual && gameMovingLightData.visual.material) {
+                gameMovingLightData.visual.material.color.setHSL(currentHue, saturation, lightness);
+                if (gameMovingLightData.visual.material.emissive) {
+                    gameMovingLightData.visual.material.emissive.setHSL(currentHue, saturation, lightness);
+                }
+            }
         }
     }
     // --- Fim da Atualização da Luz Móvel ---
 
     // --- Lógica da Sequência de Luzes ORDENADA (1->2) ---
     if (gameShouldUpdate && gameSequencedSpotlights.length > 0) {
-        if (time - lastSequenceUpdateTime >= sequenceInterval) {
-            // Apaga a luz anterior (se houver)
+        if (elapsedTime - lastSequenceUpdateTime >= sequenceInterval) {
             if (currentSequenceIndex >= 0) {
                 gameSequencedSpotlights[currentSequenceIndex].visible = false;
             }
-            // Calcula o próximo índice sequencialmente
             currentSequenceIndex = (currentSequenceIndex + 1) % gameSequencedSpotlights.length;
-            // Acende a nova luz
-            gameSequencedSpotlights[currentSequenceIndex].visible = true;
-            // Atualiza o tempo da última mudança
-            lastSequenceUpdateTime = time;
+            const activeLight = gameSequencedSpotlights[currentSequenceIndex];
+            activeLight.visible = true;
+            // Aplicar a cor atual do ciclo HSL
+            if (currentHue !== undefined) { // Garante que currentHue foi calculado
+                 activeLight.color.setHSL(currentHue, saturation, lightness);
+            }
+            lastSequenceUpdateTime = elapsedTime;
         }
     }
     // --- Fim Lógica da Sequência Ordenada ---
 
     // --- Lógica da Sequência de ORDEM ALEATÓRIA (2->Fim) ---
     if (gameShouldUpdate && gameRandomSpotlights.length > 0) {
-        // Verifica se passou o intervalo para mudar de luz
-        if (time - lastRandomSequenceUpdateTime >= sequenceInterval) {
-            // Apaga a luz anterior (se houver)
+        if (elapsedTime - lastRandomSequenceUpdateTime >= sequenceInterval) {
             if (currentRandomIndex >= 0) {
                 gameRandomSpotlights[currentRandomIndex].visible = false;
             }
-
-            // Escolhe o PRÓXIMO índice aleatoriamente
             let nextRandomIndex;
             if (gameRandomSpotlights.length === 1) {
-                nextRandomIndex = 0; // Se só houver uma luz, é sempre essa
+                nextRandomIndex = 0; 
             } else {
                 do {
                     nextRandomIndex = Math.floor(Math.random() * gameRandomSpotlights.length);
-                } while (nextRandomIndex === currentRandomIndex); // Garante que o próximo índice é DIFERENTE do atual
+                } while (nextRandomIndex === currentRandomIndex); 
             }
-
-            // Acende a nova luz escolhida aleatoriamente
-            gameRandomSpotlights[nextRandomIndex].visible = true;
-
-            // Atualiza o índice atual e o tempo da última mudança
+            const activeLight = gameRandomSpotlights[nextRandomIndex];
+            activeLight.visible = true;
+            // Aplicar a cor atual do ciclo HSL
+            if (currentHue !== undefined) { // Garante que currentHue foi calculado
+                activeLight.color.setHSL(currentHue, saturation, lightness);
+            }
             currentRandomIndex = nextRandomIndex;
-            lastRandomSequenceUpdateTime = time;
+            lastRandomSequenceUpdateTime = elapsedTime;
         }
     }
     // --- Fim Lógica da Sequência de Ordem Aleatória ---
@@ -467,7 +475,7 @@ function animate(now) {
             let newPos = initialPosition.clone();
             let currentVelocity = new CANNON.Vec3(0, 0, 0);
 
-            const angle = time * platformSpeed + offset;
+            const angle = elapsedTime * platformSpeed + offset;
             const displacement = Math.sin(angle) * distance;
             const velocityFactor = Math.cos(angle) * platformSpeed * distance;
 
