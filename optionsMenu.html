@@ -44,21 +44,20 @@
             <legend style="padding: 0 10px; color: #ccc;">Atalhos de Teclado (Movimento)</legend>
             <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
                 <label for="keybindForward">Frente:</label>
-                <button class="keybind-button" id="keybindForward" data-action="forward">W</button>
+                <button class="fixed-keybind-display" id="keybindForward" data-action="forward">W</button>
 
                 <label for="keybindBackward">Trás:</label>
-                <button class="keybind-button" id="keybindBackward" data-action="backward">S</button>
+                <button class="fixed-keybind-display" id="keybindBackward" data-action="backward">S</button>
 
                 <label for="keybindLeft">Esquerda:</label>
-                <button class="keybind-button" id="keybindLeft" data-action="left">A</button>
+                <button class="fixed-keybind-display" id="keybindLeft" data-action="left">A</button>
 
                 <label for="keybindRight">Direita:</label>
-                <button class="keybind-button" id="keybindRight" data-action="right">D</button>
+                <button class="fixed-keybind-display" id="keybindRight" data-action="right">D</button>
 
                 <label for="keybindJump">Saltar:</label>
-                <button class="keybind-button" id="keybindJump" data-action="jump">Space</button>
+                <button class="fixed-keybind-display" id="keybindJump" data-action="jump">Space</button>
             </div>
-            <p id="keybindMessage" style="text-align: center; margin-top: 10px; font-size: 0.85em; color: #ffcc00; min-height: 1.2em;"></p>
         </fieldset>
 
         <!-- Development Controls Section -->
@@ -95,8 +94,8 @@
              background-color: rgba(150, 150, 150, 0.3) !important;
              border-color: rgba(255, 255, 255, 0.8) !important;
         }
-        /* Keybind Button Styling (Rebindable) - Modificado */
-        #optionsMenu .keybind-button {
+        /* Keybind Button Styling (Rebindable) - Modificado para fixed-keybind-display */
+        #optionsMenu .keybind-button { /* Estilo original mantido caso seja usado em outro lugar, mas não para movimento */
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.4);
             color: #ffffff;
@@ -104,23 +103,23 @@
             border-radius: 5px;
             font-size: 0.9em;
             text-align: center;
-            min-width: 60px; /* Ensure minimum width */
-            width: 100%; /* Adicionado para consistência com fixed-keybind-display */
-            box-sizing: border-box; /* Adicionado para consistência com fixed-keybind-display */
+            min-width: 60px; 
+            width: 100%; 
+            box-sizing: border-box; 
         }
 
          #optionsMenu .fixed-keybind-display {
-            background: rgba(255, 255, 255, 0.1); /* Same background */
-            border: 1px solid rgba(255, 255, 255, 0.4); /* Same border */
-            color: #ffffff; /* Same text color */
-            padding: 5px 10px; /* Same padding */
-            border-radius: 5px; /* Same border-radius */
-            font-size: 0.9em; /* Same font-size */
-            text-align: center; /* Same alignment */
-            min-width: 60px; /* Same minimum width */
-            cursor: default; /* Default cursor, not clickable */
-            width: 100%; /* Added to ensure it occupies the full width of the cell */
-            box-sizing: border-box; /* Added to include padding/border in total width */
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            color: #ffffff; 
+            padding: 5px 10px; 
+            border-radius: 5px; 
+            font-size: 0.9em; 
+            text-align: center; 
+            min-width: 60px; 
+            cursor: default; 
+            width: 100%; 
+            box-sizing: border-box; 
          }
 
          #optionsMenu fieldset {
@@ -138,7 +137,7 @@
     </style>
      <script>
         // Corrige o caminho se optionsMenu.html estiver na raiz
-        const menuClickSound = new Audio('assets/sounds/menu_click.wav'); // <-- REMOVIDO ../
+        const menuClickSound = new Audio('assets/sounds/menu_click.wav'); 
 
         function playClick() {
             if (!menuClickSound.paused) {
@@ -148,9 +147,8 @@
         }
 
         // --- Get Elements ---
-        const keybindButtons = document.querySelectorAll('.keybind-button');
-        const keybindMessage = document.getElementById('keybindMessage');
-        const backButton = document.getElementById('backToPauseBtn'); // Adicionado para o botão voltar
+        const movementKeyDisplayButtons = document.querySelectorAll('#optionsMenu fieldset:first-of-type .fixed-keybind-display[data-action]'); // Alterado para selecionar os botões de exibição de movimento
+        const backButton = document.getElementById('backToPauseBtn'); 
 
         // --- Default Settings ---
         let settings = {
@@ -161,11 +159,13 @@
                 right: 'D',
                 jump: 'Space'
             }
+            // Futuramente, outras configurações podem vir aqui (sensibilidade do mouse, volume, etc.)
+            // e ser carregadas/salvas via localStorage
         };
 
         // --- Initialize Displayed Values ---
         function updateDisplay() {
-            keybindButtons.forEach(button => {
+            movementKeyDisplayButtons.forEach(button => {
                 const action = button.dataset.action;
                 if (action && settings.keybinds[action]) {
                     button.textContent = settings.keybinds[action] === ' ' ? 'Space' : settings.keybinds[action].toUpperCase();
@@ -173,94 +173,15 @@
             });
         }
 
-        // --- Event Listeners for Keybinding ---
-        let listeningButton = null;
-
-        function handleKeydown(event) {
-            event.preventDefault();
-            if (!listeningButton) return;
-
-            let newKey = event.key;
-            const action = listeningButton.dataset.action;
-
-            if (newKey === ' ') {
-                newKey = 'Space';
-            }
-
-            if (newKey && action) {
-                let conflict = false;
-                for (const act in settings.keybinds) {
-                    if (settings.keybinds[act] === newKey && act !== action) {
-                        conflict = true;
-                        break;
-                    }
-                }
-
-                if (conflict) {
-                     keybindMessage.textContent = `Tecla '${newKey.toUpperCase()}' já está em uso!`;
-                } else {
-                    settings.keybinds[action] = newKey;
-                    keybindMessage.textContent = '';
-                    updateDisplay();
-                     console.log("Keybinds updated:", settings.keybinds);
-                }
-            }
-
-            listeningButton.classList.remove('waiting');
-            listeningButton.disabled = false;
-            listeningButton = null;
-            document.removeEventListener('keydown', handleKeydown, true);
-            keybindButtons.forEach(btn => btn.disabled = false);
-        }
-
-        keybindButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                playClick(); // <-- Adiciona som ao clicar para iniciar a atribuição
-                if (listeningButton) {
-                    listeningButton.classList.remove('waiting');
-                    listeningButton.disabled = false;
-                    updateDisplay();
-                }
-
-                listeningButton = button;
-                button.textContent = 'Pressione...';
-                button.classList.add('waiting');
-                keybindMessage.textContent = 'Pressione uma tecla para atribuir... (ESC para cancelar)';
-
-                keybindButtons.forEach(btn => btn.disabled = true);
-                button.disabled = false;
-
-                setTimeout(() => {
-                    document.addEventListener('keydown', handleKeydown, true);
-                }, 50);
-            });
-        });
-
-        // Adiciona som ao botão Voltar (se não foi coberto pelo pauseMenu.js)
-        // O listener pode já existir em pauseMenu.js, verifique se há duplicação.
-        // Se o listener em pauseMenu.js já adiciona o som, remova este.
-        /*
+        // Adiciona som ao botão Voltar
         if (backButton) {
              backButton.addEventListener('click', () => {
-                 playClick(); // <-- Adiciona som ao Voltar
-                 // A lógica de voltar (showPauseMenu) deve estar no pauseMenu.js
+                 playClick();
+                 // A lógica de voltar (showPauseMenu ou similar) deve estar no script que chama este menu (ex: pauseMenu.js ou main.js)
              });
         }
-        */
-
-         document.addEventListener('keydown', (event) => {
-             if (event.key === 'Escape' && listeningButton) {
-                 event.stopPropagation();
-                 keybindMessage.textContent = 'Atribuição cancelada.';
-                 listeningButton.classList.remove('waiting');
-                 listeningButton.disabled = false;
-                 listeningButton = null;
-                 document.removeEventListener('keydown', handleKeydown, true);
-                 keybindButtons.forEach(btn => btn.disabled = false);
-                 updateDisplay();
-             }
-         }, true);
-
+        
+        // Inicializa a exibição das teclas
         updateDisplay();
      </script>
 </div>

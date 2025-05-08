@@ -1,3 +1,4 @@
+console.log("MAIN.JS EXECUTADO:", new Date().toISOString());
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import renderer from './renderer.js';
@@ -14,6 +15,12 @@ let currentLevelPath; // Declarar currentLevelPath num escopo mais alto
 
 // --- Definição da Cena Principal ---
 const scene = new THREE.Scene(); // Defina a cena principal AQUI, antes de tudo
+
+// --- Level Complete Sound (declarado uma vez) ---
+const levelCompleteSound = new Audio('assets/sound/GAME_OVER.mp3');
+levelCompleteSound.volume = 0.1; // Define o volume para 50% (ajuste conforme necessário)
+levelCompleteSound.load();
+// ---
 
 // ajuste inicial de pixel ratio
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -105,11 +112,22 @@ const SPAWN_YAW = Math.PI;
 let isLevelComplete = false;
 
 function handleLevelComplete() {
-    if (isLevelComplete) return;
+    if (isLevelComplete) {
+        return;
+    }
 
     isLevelComplete = true;
     playerCtrl.enabled = false;
     document.exitPointerLock();
+
+    // Play the preloaded level complete sound
+    if (levelCompleteSound.paused) {
+        levelCompleteSound.currentTime = 0; // Garante que o som começa do início
+        levelCompleteSound.play().catch(e => console.error("Error playing level complete sound:", e));
+    } else {
+        levelCompleteSound.currentTime = 0; // Reinicia e toca
+        levelCompleteSound.play().catch(e => console.error("Error re-playing level complete sound:", e));
+    }
 
     const finalElapsedTime = timer.getElapsedTime();
     const finalTimeFormatted = timer.formatTime(finalElapsedTime);

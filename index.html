@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu Inicial</title>
+  <link rel="stylesheet" href="menu.css">
   <style>
     /* Estilos básicos para o corpo */
     body {
@@ -120,14 +121,6 @@
         align-items: center;
         font-size: 0.95em;
     }
-
-    #optionsMenu #keybindMessage {
-        text-align: center;
-        margin-top: 10px;
-        font-size: 0.85em;
-        color: #ffcc00;
-        min-height: 1.2em;
-    }
   </style>
 </head>
 <body>
@@ -200,7 +193,7 @@
   </div>
 
   <!-- Menu de Opções Container -->
-  <div id="optionsMenu">
+  <div id="optionsMenu" style="display: none;">
     <div style="
         background: rgba(30, 30, 30, 0.85);
         padding: 30px 50px;
@@ -229,21 +222,20 @@
             <legend>Atalhos de Teclado (Movimento)</legend>
             <div class="options-grid">
                 <label for="keybindForward">Frente:</label>
-                <button class="keybind-button" id="keybindForward" data-action="forward">W</button>
+                <button class="fixed-keybind-display" id="keybindForward" data-action="forward">W</button>
 
                 <label for="keybindBackward">Trás:</label>
-                <button class="keybind-button" id="keybindBackward" data-action="backward">S</button>
+                <button class="fixed-keybind-display" id="keybindBackward" data-action="backward">S</button>
 
                 <label for="keybindLeft">Esquerda:</label>
-                <button class="keybind-button" id="keybindLeft" data-action="left">A</button>
+                <button class="fixed-keybind-display" id="keybindLeft" data-action="left">A</button>
 
                 <label for="keybindRight">Direita:</label>
-                <button class="keybind-button" id="keybindRight" data-action="right">D</button>
+                <button class="fixed-keybind-display" id="keybindRight" data-action="right">D</button>
 
                 <label for="keybindJump">Saltar:</label>
-                <button class="keybind-button" id="keybindJump" data-action="jump">Space</button>
+                <button class="fixed-keybind-display" id="keybindJump" data-action="jump">Space</button>
             </div>
-            <p id="keybindMessage"></p>
         </fieldset>
 
         <!-- Development Controls Section -->
@@ -277,18 +269,21 @@
     </div>
   </div>
 
+  <!-- Novo container para níveis -->
+  <div id="levelsContainer" style="display: none;"></div>
+
   <script type="module">
     import { bindMenuSounds } from './utils/menuSoundSetup.js';
     import { playMenuClickSound } from './utils/audioUtils.js';
 
     const mainMenuContainer = document.querySelector('.menu-container');
     const optionsMenuContainer = document.getElementById('optionsMenu');
+    const levelsContainer = document.getElementById('levelsContainer');
+
     const playBtn = document.getElementById('playButton');
     const optionsBtn = document.getElementById('optionsButton');
     const creditsBtn = document.getElementById('creditsButton');
     const backToMainBtn = document.getElementById('backToMainBtn');
-    const keybindButtons = optionsMenuContainer.querySelectorAll('.keybind-button');
-    const keybindMessage = optionsMenuContainer.querySelector('#keybindMessage');
 
     let settings = {
         keybinds: {
@@ -303,12 +298,77 @@
     function showMainMenu() {
         mainMenuContainer.style.display = 'flex';
         optionsMenuContainer.style.display = 'none';
+        levelsContainer.style.display = 'none';
     }
 
     function showOptionsMenu() {
         mainMenuContainer.style.display = 'none';
         optionsMenuContainer.style.display = 'flex';
-        keybindMessage.textContent = '';
+        levelsContainer.style.display = 'none';
+        updateDisplay();
+    }
+
+    async function loadLevelsMenu() {
+        try {
+            const response = await fetch('levels.html');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const htmlContent = await response.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            const levelsMenuHTML = doc.querySelector('.menu-container'); 
+
+            if (levelsMenuHTML) {
+                levelsContainer.innerHTML = '';
+                levelsContainer.appendChild(levelsMenuHTML.cloneNode(true));
+                
+                mainMenuContainer.style.display = 'none'; 
+                optionsMenuContainer.style.display = 'none'; 
+                levelsContainer.style.display = 'flex';
+
+                setupLevelSelectionButtons();
+            } else {
+                console.error("Não foi possível encontrar '.menu-container' em levels.html");
+            }
+
+        } catch (error) {
+            console.error('Erro ao carregar o menu de níveis:', error);
+        }
+    }
+
+    function setupLevelSelectionButtons() {
+        const level1Btn = levelsContainer.querySelector('#level1Button');
+        const level2Btn = levelsContainer.querySelector('#level2Button');
+        const level3Btn = levelsContainer.querySelector('#level3Button');
+        const backBtnFromLevels = levelsContainer.querySelector('#backButton');
+
+        if (level1Btn) {
+            level1Btn.onclick = () => {
+                playMenuClickSound();
+                setTimeout(() => { window.location.href = 'level_1.html'; }, 150);
+            };
+        }
+        if (level2Btn) {
+            level2Btn.onclick = () => {
+                playMenuClickSound();
+                setTimeout(() => { window.location.href = 'level_2.html'; }, 150);
+            };
+        }
+        if (level3Btn) {
+            level3Btn.onclick = () => {
+                playMenuClickSound();
+                setTimeout(() => { window.location.href = 'level_3.html'; }, 150);
+            };
+        }
+        if (backBtnFromLevels) {
+            backBtnFromLevels.onclick = () => {
+                playMenuClickSound();
+                levelsContainer.style.display = 'none';
+                showMainMenu();
+            };
+        }
     }
 
     bindMenuSounds();
@@ -316,9 +376,7 @@
     if (playBtn) {
       playBtn.addEventListener('click', () => {
         playMenuClickSound();
-        setTimeout(() => {
-          window.location.href = 'levels.html';
-        }, 150);
+        loadLevelsMenu();
       });
     }
 
@@ -343,10 +401,9 @@
         });
     }
 
-    let listeningButton = null;
-
     function updateDisplay() {
-        keybindButtons.forEach(button => {
+        const movementKeyDisplayButtons = optionsMenuContainer.querySelectorAll('fieldset:first-of-type .fixed-keybind-display[data-action]');
+        movementKeyDisplayButtons.forEach(button => {
             const action = button.dataset.action;
             if (action && settings.keybinds[action]) {
                 const key = settings.keybinds[action];
@@ -355,89 +412,8 @@
         });
     }
 
-    function handleKeydown(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!listeningButton) return;
-
-        let newKey = event.key;
-        const action = listeningButton.dataset.action;
-
-        if (newKey === 'Escape') {
-            keybindMessage.textContent = 'Atribuição cancelada.';
-            listeningButton.classList.remove('waiting');
-            listeningButton.disabled = false;
-            listeningButton = null;
-            document.removeEventListener('keydown', handleKeydown, true);
-            keybindButtons.forEach(btn => btn.disabled = false);
-            updateDisplay();
-            return;
-        }
-
-        if (newKey === ' ') {
-            newKey = 'Space';
-        }
-
-        if (newKey && newKey.length === 1 || ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(newKey)) {
-             let conflict = false;
-             let conflictAction = null;
-             for (const act in settings.keybinds) {
-                 if (settings.keybinds[act].toUpperCase() === newKey.toUpperCase() && act !== action) {
-                     conflict = true;
-                     conflictAction = act;
-                     break;
-                 }
-             }
-
-             if (conflict) {
-                  keybindMessage.textContent = `Tecla '${newKey.toUpperCase()}' já está em uso por '${conflictAction}'!`;
-             } else {
-                 settings.keybinds[action] = newKey;
-                 keybindMessage.textContent = '';
-                 updateDisplay();
-                 console.log("Keybinds updated:", settings.keybinds);
-
-                 listeningButton.classList.remove('waiting');
-                 listeningButton.disabled = false;
-                 listeningButton = null;
-                 document.removeEventListener('keydown', handleKeydown, true);
-                 keybindButtons.forEach(btn => btn.disabled = false);
-             }
-        } else {
-             keybindMessage.textContent = `Tecla '${newKey}' inválida.`;
-        }
-    }
-
-    keybindButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            playMenuClickSound();
-            if (listeningButton) {
-                listeningButton.classList.remove('waiting');
-                listeningButton.disabled = false;
-                updateDisplay();
-            }
-
-            listeningButton = button;
-            button.textContent = 'Pressione...';
-            button.classList.add('waiting');
-            keybindMessage.textContent = 'Pressione uma tecla... (ESC para cancelar)';
-
-            keybindButtons.forEach(btn => {
-                if (btn !== listeningButton) btn.disabled = true;
-            });
-            button.disabled = false;
-
-            setTimeout(() => {
-                document.addEventListener('keydown', handleKeydown, true);
-            }, 50);
-        });
-    });
-
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            if (listeningButton) {
-                return;
-            }
             if (optionsMenuContainer.style.display === 'flex') {
                 event.preventDefault();
                 playMenuClickSound();
@@ -448,6 +424,36 @@
 
     updateDisplay();
     showMainMenu();
+  </script>
+
+  <!-- Script para Música de Fundo -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const backgroundMusic = new Audio('assets/sound/Music_Menu.mp3');
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.02;
+
+        const playPromise = backgroundMusic.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                console.log("Música de fundo iniciada.");
+            }).catch(error => {
+                console.warn("Autoplay da música de fundo bloqueado. Tentando após interação do utilizador.", error);
+                const startMusicOnInteraction = () => {
+                    backgroundMusic.play().then(() => {
+                        console.log("Música de fundo iniciada após interação.");
+                    }).catch(e => {
+                        console.error("Erro ao tentar tocar música após interação:", e);
+                    });
+                    document.removeEventListener('click', startMusicOnInteraction);
+                    document.removeEventListener('keydown', startMusicOnInteraction);
+                };
+                document.addEventListener('click', startMusicOnInteraction, { once: true });
+                document.addEventListener('keydown', startMusicOnInteraction, { once: true });
+            });
+        }
+    });
   </script>
 </body>
 </html>
