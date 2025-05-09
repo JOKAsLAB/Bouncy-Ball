@@ -11,7 +11,13 @@ import { createTimer } from './timer.js';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from './collisionGroups.js';
 import { playMenuClickSound } from './utils/audioUtils.js'; // <-- Importa a função
 
-let currentLevelPath; // Declarar currentLevelPath num escopo mais alto
+let currentLevelPath; 
+let currentLevelAudioContext = null; 
+let currentLevelBackgroundSound = null; 
+let currentRainParticles = null; 
+let currentRainHeight = 30; // Valor padrão, será atualizado pelo nível
+let currentRainSpreadX = 50; // Valor padrão, será atualizado pelo nível
+let currentRainSpreadZ = 50; // Valor padrão, será atualizado pelo nível
 
 // --- Definição da Cena Principal ---
 const scene = new THREE.Scene(); // Defina a cena principal AQUI, antes de tudo
@@ -182,8 +188,12 @@ function handleLevelComplete() {
 const checkpointManager = new CheckpointManager(world, playerBody, handleLevelComplete);
 checkpointManager.setInitialCheckpoint(SPAWN_POS);
 
-// Passa o world E o playerBody para o PlayerController
-const playerCtrl = new PlayerController(camera, renderer.domElement, playerBody, world);
+// Passa o world, playerBody, e as opções incluindo checkpointManager e spawnYaw para o PlayerController
+const playerCtrl = new PlayerController(camera, renderer.domElement, playerBody, world, {
+    checkpointManager: checkpointManager,
+    spawnYaw: SPAWN_YAW
+    // pode adicionar outras opções aqui se necessário, ex: speed: 5
+});
 
 // guarda p/ restaurar depois (não obrigatório mas aconselhável)
 const originalCollisionResponse = playerBody.collisionResponse;
@@ -248,7 +258,25 @@ function initializePauseMenu() {
         }
 
         // Usa await para esperar que createLevelScene (que pode ser async) termine
-        const { scene: levelScene, movingPlatforms, movingLightData, sequencedSpotlights, randomSpotlights } = await createLevelScene(world, checkpointManager, groundWallMaterial);
+        // ***** CORREÇÃO AQUI: Passe o objeto 'camera' *****
+        const { 
+            scene: levelScene, 
+            movingPlatforms, 
+            movingLightData, 
+            sequencedSpotlights, 
+            randomSpotlights,
+            backgroundSound: levelBackgroundSound, // Renomeie para evitar conflito com a variável global
+            audioListener: levelAudioListener,     // Renomeie para evitar conflito
+            rainParticles: levelRainParticles, // Certifique-se de obter isto
+            rainHeight: levelRainHeight, // Altura da chuva
+            rainSpreadX: levelRainSpreadX, // Spread X da chuva
+            rainSpreadZ: levelRainSpreadZ // Spread Z da chuva
+        } = await createLevelScene(world, checkpointManager, groundWallMaterial, camera); // <--- PASSE A 'camera' AQUI
+
+        currentRainParticles = levelRainParticles; // Atribua à variável global
+        currentRainHeight = levelRainHeight || 30; // Atualiza altura da chuva
+        currentRainSpreadX = levelRainSpreadX || 50; // Atualiza spread X
+        currentRainSpreadZ = levelRainSpreadZ || 50; // Atualiza spread Z
 
         // Agora, levelScene já deve ter background e environment definidos pelo HDRI
 
@@ -286,6 +314,17 @@ function initializePauseMenu() {
         console.log("Moving light data for this level:", gameMovingLightData);
         console.log("Sequenced spotlights:", gameSequencedSpotlights);
         console.log("Random spotlights:", gameRandomSpotlights); // Log das luzes aleatórias
+
+        // Guarda a referência ao som de fundo e ao listener
+        currentLevelBackgroundSound = levelBackgroundSound; // Use a variável renomeada
+        if (levelAudioListener) { // Use a variável renomeada
+            currentLevelAudioContext = levelAudioListener.context;
+        }
+
+        // Guarda as partículas de chuva e suas propriedades
+        if (currentRainParticles) {
+            console.log("Partículas de chuva carregadas para o nível.");
+        }
 
         // Inicializa o menu de pausa e o loop de animação
         initializePauseMenu();
@@ -336,6 +375,22 @@ window.addEventListener('keydown', (event) => {
 });
 // --- End Event Listeners ---
 
+// Exemplo de como poderia ser integrado com o clique no DOM para o pointer lock
+renderer.domElement.addEventListener('click', () => {
+    if (currentLevelAudioContext && currentLevelAudioContext.state === 'suspended') {
+        currentLevelAudioContext.resume().then(() => {
+            console.log("AudioContext resumido após interação.");
+            if (currentLevelBackgroundSound && !currentLevelBackgroundSound.isPlaying) {
+                currentLevelBackgroundSound.play();
+                console.log("Tentando tocar música de fundo após resumir AudioContext.");
+            }
+        });
+    } else if (currentLevelBackgroundSound && !currentLevelBackgroundSound.isPlaying) {
+        currentLevelBackgroundSound.play();
+        console.log("Tentando tocar música de fundo (AudioContext já estava a correr).");
+    }
+});
+
 // Função separada para atualizar o velocímetro (para reutilização)
 function updateSpeedometer() {
     const speedElement = document.getElementById('speedometer');
@@ -353,6 +408,45 @@ function updateSpeedometer() {
          speedText = `Speed: ${speedValue.toFixed(2)} u/s`;
     }
     speedElement.textContent = speedText;
+}
+
+// Dentro da sua função de inicialização de nível, por exemplo loadLevel:
+async function loadLevel(levelPath) {
+    if (currentLevelBackgroundSound && currentLevelBackgroundSound.isPlaying) {
+        currentLevelBackgroundSound.stop(); // Para o som do nível anterior
+    }
+    currentLevelBackgroundSound = null;
+    currentLevelAudioContext = null;
+    if (currentRainParticles) { 
+        if (currentRainParticles.parent) { // Verifica se ainda está na cena
+            currentRainParticles.parent.remove(currentRainParticles);
+        }
+        currentRainParticles.geometry.dispose();
+        currentRainParticles.material.dispose();
+        currentRainParticles = null;
+    }
+    try {
+        const sceneModule = await import(levelPath);
+        if (sceneModule && sceneModule.createScene) {
+            const levelData = await sceneModule.createScene(world, checkpointManager, groundWallMaterial, camera);
+            scene.add(levelData.scene);
+            
+            currentLevelBackgroundSound = levelData.backgroundSound;
+            if (levelData.audioListener) {
+                currentLevelAudioContext = levelData.audioListener.context;
+            }
+
+            currentRainParticles = levelData.rainParticles;
+            if (currentRainParticles) {
+                currentRainHeight = levelData.rainHeight || 30; 
+                currentRainSpreadX = levelData.rainSpreadX || 50;
+                currentRainSpreadZ = levelData.rainSpreadZ || 50;
+                console.log("Partículas de chuva carregadas para o nível.");
+            }
+        }
+    } catch (error) {
+        console.error("Error loading level:", error);
+    }
 }
 
 // Loop com fixed‐timestep
@@ -524,6 +618,33 @@ function animate(now) {
         });
     }
     // --- Fim da Atualização das Plataformas Móveis ---
+
+    // --- Animação da Chuva ---
+    // Verifica se currentRainParticles e playerBody (o corpo físico direto) existem
+    if (currentRainParticles && playerBody) { 
+        const positions = currentRainParticles.geometry.attributes.position.array;
+        const rainSpeed = 25; // Pode ajustar a velocidade da chuva
+        const playerPosition = playerBody.position; // Posição do corpo físico do jogador (usando playerBody diretamente)
+
+        for (let i = 0; i < positions.length; i += 3) {
+            // Mover partícula para baixo
+            positions[i + 1] -= rainSpeed * dt;
+
+            // Se a gota atingir uma certa distância abaixo do jogador, reposiciona-a
+            // O limite inferior (playerPosition.y - 15) garante que a chuva desaparece abaixo da vista
+            if (positions[i + 1] < playerPosition.y - 15) { 
+                // Reposiciona Y acima da cabeça do jogador
+                // currentRainHeight é a altura da "caixa de chuva" acima do jogador
+                positions[i + 1] = playerPosition.y + currentRainHeight + (Math.random() * 10 - 5); // Adiciona uma pequena variação vertical
+
+                // Reposiciona X e Z ao redor da posição atual do jogador
+                positions[i] = playerPosition.x + (Math.random() * currentRainSpreadX - currentRainSpreadX / 2);
+                positions[i + 2] = playerPosition.z + (Math.random() * currentRainSpreadZ - currentRainSpreadZ / 2);
+            }
+        }
+        currentRainParticles.geometry.attributes.position.needsUpdate = true;
+    }
+    // --- Fim Animação da Chuva ---
 
     // Atualiza o display do temporizador (só se estiver visível)
     if (timerDisplayElement && gameShouldUpdate && isUiVisible) {

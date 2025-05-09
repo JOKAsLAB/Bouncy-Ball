@@ -3,7 +3,8 @@ import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 import { createBaseScene } from './scene_base.js';
 
-export async function createScene(world, checkpointManager, groundWallMaterial) {
+// Adicione 'camera' como parâmetro para o áudio
+export async function createScene(world, checkpointManager, groundWallMaterial, camera) { 
     const scene = await createBaseScene('kloppenheim_02_puresky_1k.hdr');
 
     scene.background = new THREE.Color(0x000000);
@@ -18,6 +19,34 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
              scene.remove(object);
         }
     });
+
+    // --- Áudio de Fundo para Nível 3 ---
+    let backgroundSound;
+    let audioListener; 
+    if (camera) { // Verifica se a câmera foi passada
+        audioListener = new THREE.AudioListener();
+        camera.add(audioListener); // Adiciona o listener à câmera
+
+        backgroundSound = new THREE.Audio(audioListener);
+        const audioLoader = new THREE.AudioLoader();
+
+        try {
+            const buffer = await audioLoader.loadAsync('assets/sound/level3_background_sound.mp3');
+            backgroundSound.setBuffer(buffer);
+            backgroundSound.setLoop(true);
+            backgroundSound.setVolume(0.01); // Ajuste o volume conforme necessário
+            
+            if (!backgroundSound.isPlaying) {
+                backgroundSound.play();
+            }
+            console.log("Música de fundo do nível 3 carregada.");
+        } catch (error) {
+            console.error("Erro ao carregar música de fundo do nível 3:", error);
+        }
+    } else {
+        console.warn("Câmera não fornecida para createScene (nível 3), áudio de fundo não será inicializado.");
+    }
+    // --- Fim Áudio de Fundo ---
 
     // --- Adicionar Estrelas ---
     const starCount = 200; // Número de estrelas (pode aumentar para mais densidade se desejar)
@@ -217,7 +246,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
     ];
 
     platforms.forEach(({ position, size, isCheckpoint, isFinal = false, skipSpotlight = false, inSequence = false, isRandomSequence = false }) => {
-        const isCheckpointPlatform = size[0] === 10;
+        const isCheckpointPlatform = size[0] === 10; // Ou use diretamente 'isCheckpoint' se for mais fiável
         const baseMaterialToUse = isCheckpointPlatform ? checkpointPlatformTexturedMaterial : platformMaterial;
         
         const geometry = new THREE.BoxGeometry(...size);
@@ -253,6 +282,13 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
 
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
         const body = new CANNON.Body({ mass: 0, position: new CANNON.Vec3(...position), shape: shape, material: groundWallMaterial, collisionFilterGroup: GROUP_GROUND, collisionFilterMask: GROUP_PLAYER });
+        
+        // Adiciona a propriedade isUnsafePlatform se NÃO for um checkpoint
+        // Usando 'isCheckpoint' diretamente da desestruturação do objeto platform
+        // Ou !isCheckpointPlatform se essa for a sua lógica definitiva para identificar checkpoints
+        if (!isCheckpoint) { 
+            body.isUnsafePlatform = true;
+        }
         world.addBody(body);
 
         if (!isCheckpointPlatform && !skipSpotlight && !inSequence && !isRandomSequence) {
@@ -295,5 +331,14 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
         }
     });
 
-    return { scene, movingPlatforms, movingLightData, sequencedSpotlights, randomSpotlights };
+    // Modifique o objeto de retorno para incluir backgroundSound e audioListener
+    return { 
+        scene, 
+        movingPlatforms, 
+        movingLightData, 
+        sequencedSpotlights, 
+        randomSpotlights,
+        backgroundSound, // Adicionado
+        audioListener    // Adicionado
+    };
 }

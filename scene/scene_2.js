@@ -4,10 +4,38 @@ import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
 // Torna a função async
-export async function createScene(world, checkpointManager, groundWallMaterial) {
+export async function createScene(world, checkpointManager, groundWallMaterial, camera) { // Adicione camera se precisar de som de chuva
     // Usa await para esperar pela Promise de createBaseScene
-    const scene = await createBaseScene('kloofendal_48d_partly_cloudy_puresky_1k.hdr');
+    const scene = await createBaseScene('overcast_soil_puresky_1k.hdr');
     const movingPlatforms = [];
+
+    // --- Áudio de Fundo (Opcional para Nível 2) ---
+    let backgroundSound;
+    let audioListener; // Guardar para retornar
+    if (camera) {
+        audioListener = new THREE.AudioListener();
+        camera.add(audioListener);
+
+        backgroundSound = new THREE.Audio(audioListener);
+        const audioLoader = new THREE.AudioLoader();
+        try {
+            // Substitua pelo seu arquivo de som do nível 2
+            const buffer = await audioLoader.loadAsync('assets/sound/level2_background_sound.mp3');
+            backgroundSound.setBuffer(buffer);
+            backgroundSound.setLoop(true);
+            backgroundSound.setVolume(0.005); // Ajuste o volume conforme necessário (ex: 0.05)
+            // Tenta tocar o som. Pode precisar de interação do usuário em alguns navegadores.
+            if (!backgroundSound.isPlaying) {
+                backgroundSound.play();
+            }
+            console.log("Música de fundo do nível 2 carregada.");
+        } catch (error) {
+            console.error("Erro ao carregar música de fundo do nível 2:", error);
+        }
+    } else {
+        console.warn("Câmera não fornecida para createScene (nível 2), áudio de fundo não será inicializado.");
+    }
+    // --- Fim Áudio de Fundo ---
 
     // --- Carregar Texturas PBR ---
     const textureLoader = new THREE.TextureLoader();
@@ -117,6 +145,35 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
     // Materiais de checkpoint VISUAL (os triggers transparentes)
     const checkpointVisualMaterialBase = new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness: 0.9, metalness: 0.0, transparent: true, opacity: 0.5 });
     const finalCheckpointVisualMaterialBase = new THREE.MeshPhysicalMaterial({ color: 0xffff00, roughness: 0.3, metalness: 0.6, transparent: true, opacity: 0.5 });
+
+    // --- Efeito de Chuva ---
+    const rainCount = 25000; // SUGESTÃO: Reduzir para um valor entre 5000-15000
+    const rainGeometry = new THREE.BufferGeometry();
+    const rainVertices = [];
+    const rainSpreadX = 100; // Quão espalhada a chuva é em X 
+    const rainSpreadZ = 100; // Quão espalhada a chuva é em Z
+    const rainHeight = 30; // Altura de onde a chuva começa a cair
+
+    for (let i = 0; i < rainCount; i++) {
+        const x = Math.random() * rainSpreadX - rainSpreadX / 2; // Usa rainSpreadX
+        const y = Math.random() * rainHeight; // Começam em alturas variadas
+        const z = Math.random() * rainSpreadZ - rainSpreadZ / 2; // Usa rainSpreadZ
+        rainVertices.push(x, y, z);
+    }
+
+    rainGeometry.setAttribute('position', new THREE.Float32BufferAttribute(rainVertices, 3));
+
+    const rainMaterial = new THREE.PointsMaterial({
+        color: 0x6ca0dc, // Cor azulada para a chuva (experimente outros tons de azul)
+        size: 0.05,       // Tamanho das gotas BEM MENOR
+        transparent: true,
+        opacity: 0.6,    // Opacidade um pouco menor para um efeito mais suave
+        sizeAttenuation: true // Gotas mais distantes parecem menores
+    });
+
+    const rain = new THREE.Points(rainGeometry, rainMaterial);
+    scene.add(rain);
+    // --- Fim Efeito de Chuva ---
 
     const platforms = [
         // Plataformas de Checkpoint (estáticas) - usarão staticCheckpointWoodMaterial
@@ -254,6 +311,11 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
             collisionFilterGroup: GROUP_GROUND,
             collisionFilterMask: GROUP_PLAYER
         });
+        // Adiciona a propriedade isUnsafePlatform se NÃO for um checkpoint
+        // No nível 2, as plataformas móveis são as "inseguras"
+        if (platformData.isMoving && !platformData.isCheckpoint) { // Garante que não é um checkpoint móvel (se existir tal conceito)
+            body.isUnsafePlatform = true;
+        }
         world.addBody(body);
 
         if (platformData.movement) {
@@ -290,5 +352,15 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
         }
     });
 
-    return { scene, movingPlatforms };
+    // Retorna a cena, plataformas móveis, o som (se houver) e as partículas de chuva
+    return { 
+        scene, 
+        movingPlatforms, 
+        backgroundSound, // Retorna mesmo que seja undefined
+        audioListener,   // Retorna mesmo que seja undefined
+        rainParticles: rain, // Adiciona as partículas de chuva ao retorno
+        rainHeight: rainHeight, // Opcional: retornar para main.js se precisar
+        rainSpreadX: rainSpreadX, // Opcional: retornar para main.js se precisar
+        rainSpreadZ: rainSpreadZ  // Opcional: retornar para main.js se precisar
+    };
 }

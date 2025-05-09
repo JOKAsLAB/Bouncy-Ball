@@ -4,10 +4,41 @@ import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
 // Torna a função async
-export async function createScene(world, checkpointManager, groundWallMaterial) {
+export async function createScene(world, checkpointManager, groundWallMaterial, camera) { // Adicione camera como parâmetro
     // Usa await para esperar pela Promise de createBaseScene
     const scene = await createBaseScene('autumn_field_puresky_1k.hdr');
     const movingPlatforms = [];
+
+    // --- Áudio de Fundo ---
+    let backgroundSound;
+    let listener; // Declare listener para retorno
+    if (camera) { // Verifica se a câmera foi passada
+        listener = new THREE.AudioListener();
+        camera.add(listener); // Adiciona o listener à câmera
+
+        backgroundSound = new THREE.Audio(listener);
+        const audioLoader = new THREE.AudioLoader();
+
+        try {
+            const buffer = await audioLoader.loadAsync('assets/sound/level1_background_sound.mp3');
+            backgroundSound.setBuffer(buffer);
+            backgroundSound.setLoop(true);
+            backgroundSound.setVolume(0.005); // <--- ALTERE ESTE VALOR (ex: 0.1 para mais baixo)
+            // Para garantir que o som comece após uma interação do usuário (política do navegador)
+            // idealmente, o play() seria chamado após um clique ou evento similar.
+            // Mas para um jogo carregado, podemos tentar tocar imediatamente.
+            // Se não funcionar, você precisará de um "play" button ou similar.
+            if (!backgroundSound.isPlaying) {
+                backgroundSound.play();
+            }
+            console.log("Música de fundo do nível 1 carregada e tocando.");
+        } catch (error) {
+            console.error("Erro ao carregar música de fundo do nível 1:", error);
+        }
+    } else {
+        console.warn("Câmera não fornecida para createScene, áudio de fundo não será inicializado.");
+    }
+    // --- Fim Áudio de Fundo ---
 
     // --- Carregar Texturas PBR ---
     const textureLoader = new THREE.TextureLoader();
@@ -85,26 +116,16 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
         normalMap: largePlasticNormalTexture,
         normalScale: new THREE.Vector2(1, 1), 
         roughnessMap: largePlasticRoughnessTexture,
-        // Se o roughnessMap estiver a deixar os reflexos muito difusos, 
-        // pode experimentar um valor numérico baixo aqui, ex: roughness: 0.1,
-        // mas isso anulará o efeito do roughnessMap para a rugosidade base.
         metalness: 0.0, 
         displacementMap: largePlasticDisplacementTexture,
         displacementScale: 0.005, 
         displacementBias: -0.0025, 
-        specularIntensity: 0.4, // REDUZI: Antes era 0.8. Experimente valores como 0.3, 0.4, 0.5.
-        // specularColor: new THREE.Color(0xffffff), // Cor do reflexo especular (branco é o padrão para dielétricos)
-        coat: 1.0, 
-        // coatRoughness: 0.1, // EXPERIMENTE: Para um verniz mais brilhante, defina um valor baixo.
-                                // Se descomentar, anula o coatRoughnessMap abaixo.
-                                // Atualmente, está 1.0 e depois usa o mapa.
+        specularIntensity: 0.4,
+        // specularColor: new THREE.Color(0xffffff), 
+        clearcoat: 1.0, // CORRIGIDO: de 'coat' para 'clearcoat'
+        clearcoatRoughness: 0.1, // EXPERIMENTE: Para um verniz mais brilhante, defina um valor baixo.
+                                 // Se você quiser usar um mapa, seria clearcoatRoughnessMap
     });
-    if (largePlasticRoughnessTexture) {
-        largePlasticTexturedMaterial.coatRoughnessMap = largePlasticRoughnessTexture;
-        // Se o largePlasticRoughnessTexture for muito "áspero" (valores claros),
-        // o verniz também será áspero. Considere usar um valor numérico para coatRoughness acima,
-        // ou um mapa de rugosidade diferente/ajustado para o verniz.
-    }
     if (!largePlasticColorTexture) largePlasticTexturedMaterial.color = new THREE.Color(0xdddddd);
 
     // Material para as plataformas pequenas (Plastic016B) - Mantém-se
@@ -113,20 +134,15 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
         normalMap: smallPlasticNormalTexture,
         normalScale: new THREE.Vector2(1, 1),
         roughnessMap: smallPlasticRoughnessTexture,
-        // Similar ao de cima, pode experimentar: roughness: 0.1,
         metalness: 0.0,
         displacementMap: smallPlasticDisplacementTexture,
         displacementScale: 0.005,
         displacementBias: -0.0025,
-        specularIntensity: 0.4, // REDUZI: Antes era 0.8. Experimente valores como 0.3, 0.4, 0.5.
+        specularIntensity: 0.4,
         // specularColor: new THREE.Color(0xffffff),
-        coat: 1.0,
-        // coatRoughness: 0.1, // EXPERIMENTE: Para um verniz mais brilhante.
+        clearcoat: 1.0, // CORRIGIDO: de 'coat' para 'clearcoat'
+        clearcoatRoughness: 0.1, // EXPERIMENTE
     });
-    if (smallPlasticRoughnessTexture) {
-        smallPlasticTexturedMaterial.coatRoughnessMap = smallPlasticRoughnessTexture;
-        // Mesma consideração sobre o mapa de rugosidade para o verniz.
-    }
     if (!smallPlasticColorTexture) smallPlasticTexturedMaterial.color = new THREE.Color(0xcccccc);
 
     // Material para checkpoints normais
@@ -206,10 +222,10 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
             platformSpecificMaterial.displacementMap.needsUpdate = true;
             platformSpecificMaterial.displacementMap.repeat.set(repeatFactorX, repeatFactorZ);
         }
-        if (platformSpecificMaterial.coatRoughnessMap) { 
-             platformSpecificMaterial.coatRoughnessMap = platformSpecificMaterial.coatRoughnessMap.clone();
-             platformSpecificMaterial.coatRoughnessMap.needsUpdate = true;
-             platformSpecificMaterial.coatRoughnessMap.repeat.set(repeatFactorX, repeatFactorZ);
+        if (platformSpecificMaterial.clearcoatRoughnessMap) { 
+             platformSpecificMaterial.clearcoatRoughnessMap = platformSpecificMaterial.clearcoatRoughnessMap.clone();
+             platformSpecificMaterial.clearcoatRoughnessMap.needsUpdate = true;
+             platformSpecificMaterial.clearcoatRoughnessMap.repeat.set(repeatFactorX, repeatFactorZ);
         }
             
         platform.position.set(...position);
@@ -226,6 +242,10 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
             collisionFilterGroup: GROUP_GROUND,
             collisionFilterMask: GROUP_PLAYER
         });
+        // Adiciona a propriedade isUnsafePlatform se NÃO for um checkpoint
+        if (!isCheckpoint) {
+            body.isUnsafePlatform = true;
+        }
         world.addBody(body);
 
         if (isCheckpoint) {
@@ -253,5 +273,6 @@ export async function createScene(world, checkpointManager, groundWallMaterial) 
         }
     });
 
-    return { scene, movingPlatforms };
+    // Retorna a cena, plataformas móveis e o som de fundo para possível controle externo
+    return { scene, movingPlatforms, backgroundSound, audioListener: listener }; // Adicione audioListener ao retorno
 }

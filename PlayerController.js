@@ -8,13 +8,16 @@ export default class PlayerController {
         this.dom = domElement
         this.body = body // Guarda a referência ao corpo físico
         this.world = world
+        this.checkpointManager = opts.checkpointManager;
+        this.spawnYaw = opts.spawnYaw;
+
         Object.assign(this, {
             speed: 4,
             jumpSpeed: 4,
             airAccel: 3,
             groundFriction: 8,
             maxGroundSpeed: 5,
-            rayLength: opts.rayLength || 1.1, // Ajusta rayLength se necessário, deve ser > raio do jogador (1.0)
+            rayLength: opts.rayLength || 1.1,
             mouseSens: 0.001,
             ...opts
         })
@@ -22,29 +25,27 @@ export default class PlayerController {
         this.pitch = 0; this.yaw = 0
         this.keys = {}; 
         this.canJump = false
-        this.jumpQueued = false; // novo: para detectar pulo no keydown
-        this.wasOnGround = true; // *** Modificado: Começa como true (assumindo que começa no chão) ***
-        this.wallNormal = new CANNON.Vec3(); // Para guardar a normal da parede
+        this.jumpQueued = false;
+        this.wasOnGround = true; 
+        this.wallNormal = new CANNON.Vec3();
 
-        // *** Adiciona propriedade para o som de aterrissagem ***
         this.landingSound = null;
 
-        // noclip
         this.noclip = false;
         this.noclipSpeed = opts.noclipSpeed || 10;
 
-        // guarda o tipo e a resposta a colisões originais
+        this.timeOnUnsafePlatform = 0;
+        this.unsafePlatformGracePeriod = 0.75; 
+        // this.minSpeedToConsiderMoving = 0.25; // Não é mais usado para esta lógica específica
+
         this._origType = this.body.type;
         this._origCollision = this.body.collisionResponse;
 
-        // *** Carrega o som de aterrissagem ***
         try {
-            // Certifique-se que o caminho está correto relativo ao HTML (level_1.html)
             this.landingSound = new Audio('./assets/sound/land_1.mp3');
             this.landingSound.preload = 'auto';
-            // Opcional: Ajustar volume se necessário
             this.landingSound.volume = 0.025;
-            console.log("Som de aterrissagem carregado."); // Log para confirmar
+            console.log("Som de aterrissagem carregado.");
         } catch (error) {
             console.error("Erro ao carregar som de aterrissagem:", error);
         }
@@ -106,11 +107,9 @@ export default class PlayerController {
     }
 
     fixedUpdate(dt) {
-        // Reset wall contact normal at the start of each physics step
-        this.body.wallContactNormal = null; // Reset antes do world.step seria ideal, mas aqui funciona
+        this.body.wallContactNormal = null; 
 
         if (this.noclip) {
-            // --- modo noclip simples ---
             const dir = new THREE.Vector3();
             this.camera.getWorldDirection(dir); // direção olhar
             const move = new THREE.Vector3();
@@ -124,155 +123,129 @@ export default class PlayerController {
             if (move.lengthSq()>0) {
                 move.normalize().multiplyScalar(this.noclipSpeed);
             }
-            // guarda pra display
             this._lastNoclipSpeed = move.length();
-            // aplica posição diretamente
             this.body.position.vadd(
                 new CANNON.Vec3(move.x*dt, move.y*dt, move.z*dt),
                 this.body.position
             );
             this.camera.position.copy(this.body.position);
-            return;  // skip resto da física
+            return;
         }
 
-        // Raycast para baixo para detectar chão/plataforma
-        const rayStart = new CANNON.Vec3(
-            this.body.position.x,
-            this.body.position.y,
-            this.body.position.z
-        );
-        // O ponto final do raio
-        const rayEnd = new CANNON.Vec3(
-            this.body.position.x,
-            this.body.position.y - this.rayLength,
-            this.body.position.z
-        );
-        let isOnGround = false;
+        const rayStart = new CANNON.Vec3(this.body.position.x, this.body.position.y, this.body.position.z);
+        const rayEnd = new CANNON.Vec3(this.body.position.x, this.body.position.y - this.rayLength, this.body.position.z);
+        let isOnGroundCurrentFrame = false; // Renomeado para clareza neste frame
         const result = new CANNON.RaycastResult();
+        let groundBody = null;
 
-        // --- AJUSTE DO RAYCAST ---
-        this.world.raycastClosest(rayStart, rayEnd, {
-            // collisionFilterGroup: GROUP_PLAYER, // Opcional: O grupo do raio
-            collisionFilterMask: GROUP_GROUND,  // <-- IMPORTANTE: Só deteta colisões com o grupo GROUND
-            skipBackfaces: true
-        }, result);
-        // -------------------------
+        this.world.raycastClosest(rayStart, rayEnd, { collisionFilterMask: GROUP_GROUND, skipBackfaces: true }, result);
 
-        // Verifica se houve hit E se o corpo atingido é do grupo GROUND
-        // E se a distância é apropriada para o raio da esfera do jogador (1.0)
         if (result.hasHit && (result.body.collisionFilterGroup & GROUP_GROUND)) {
-             // Considera "no chão" se a distância for menor ou igual ao raio da esfera + uma pequena tolerância
-             const playerRadius = this.body.shapes[0].radius; // Obtém o raio da esfera
-             if (result.distance <= playerRadius + 0.1) { // Tolerância de 0.1
-                 isOnGround = true;
+             const playerRadius = this.body.shapes[0].radius;
+             if (result.distance <= playerRadius + 0.1) {
+                 isOnGroundCurrentFrame = true;
+                 groundBody = result.body;
              }
         }
 
-        // *** Lógica de Aterrissagem e Som ***
-        // Verifica se acabou de aterrar (estava no ar E agora está no chão)
-        if (isOnGround && !this.wasOnGround) {
-            this.canJump = true; // Permite pulo ao aterrar
-
-            // Toca o som de aterrissagem
+        if (isOnGroundCurrentFrame && !this.wasOnGround) { // Acabou de aterrar
+            this.canJump = true;
             if (this.landingSound) {
-                this.landingSound.currentTime = 0; // Reinicia o som
+                this.landingSound.currentTime = 0;
                 this.landingSound.play().catch(err => console.error('Erro ao tocar som de aterrissagem:', err));
             }
         }
-        // Atualiza o estado do chão para o próximo frame *depois* de verificar a transição
-        this.wasOnGround = isOnGround;
 
         const forward = new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion).setY(0).normalize();
         const right   = new THREE.Vector3(1,0,0).applyQuaternion(this.camera.quaternion).setY(0).normalize();
         const wish    = new THREE.Vector3()
             .addScaledVector(forward, this.keys['KeyW'] ?  1 : this.keys['KeyS'] ? -1 : 0)
             .addScaledVector(right,   this.keys['KeyD'] ?  1 : this.keys['KeyA'] ? -1 : 0);
-
         const wishDir = wish.lengthSq() > 0 ? wish.clone().normalize() : new THREE.Vector3();
-        const currentVel = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.z); // Velocidade horizontal atual
+        const currentVel = new THREE.Vector3(this.body.velocity.x, 0, this.body.velocity.z);
 
-        // --- Wall Interaction Logic ---
         let isTouchingWall = this.body.wallContactNormal !== null;
         let wallNormalTHREE = null;
         if (isTouchingWall) {
-            // Converte a normal da parede de CANNON para THREE
-            wallNormalTHREE = new THREE.Vector3(
-                this.body.wallContactNormal.x,
-                this.body.wallContactNormal.y,
-                this.body.wallContactNormal.z
-            );
-            // Normaliza por segurança
-            wallNormalTHREE.normalize();
+            wallNormalTHREE = new THREE.Vector3(this.body.wallContactNormal.x, this.body.wallContactNormal.y, this.body.wallContactNormal.z).normalize();
         }
-        // -----------------------------
 
         // --- Apply Movement ---
         if (this.canJump && this.keys['Space']) {
             // --- Jump Logic ---
-            // Aplica fricção mesmo antes de pular para não deslizar estranho
             currentVel.multiplyScalar(Math.max(0, 1 - this.groundFriction * dt));
             this.body.velocity.y = this.jumpSpeed;
             this.canJump = false;
-        } else if (isOnGround) {
-            // --- Ground Movement ---
-            currentVel.multiplyScalar(Math.max(0, 1 - this.groundFriction * dt)); // Aplica fricção
-            this._accelerate(currentVel, wishDir, this.speed, this.maxGroundSpeed, dt);
-        } else {
-            // --- Air Movement ---
-            let effectiveWishDir = wishDir.clone(); // Começa com a direção desejada normal
+            this.wasOnGround = false; // Crucial: ao saltar, não está mais "no chão" para a lógica de aterrissagem
+            this.timeOnUnsafePlatform = 0; // Reset timer ao saltar
+            isOnGroundCurrentFrame = false; // Força a lógica de "Air Movement" para este frame após o input do salto
+        }
 
-            // Se estiver no ar E tocando numa parede
+        if (isOnGroundCurrentFrame) { 
+            // --- Ground Movement (e lógica de plataforma insegura se aplicável) ---
+            currentVel.multiplyScalar(Math.max(0, 1 - this.groundFriction * dt));
+            this._accelerate(currentVel, wishDir, this.speed, this.maxGroundSpeed, dt);
+
+            // --- Lógica da Plataforma Insegura ---
+            if (groundBody && groundBody.isUnsafePlatform) {
+                // Se está no chão numa plataforma insegura, o contador avança.
+                // O jogador SÓ escapa se saltar (o que reseta o timer, como visto na lógica de salto).
+                this.timeOnUnsafePlatform += dt;
+                // console.log(`On unsafe platform. Time: ${this.timeOnUnsafePlatform.toFixed(3)}s`); // DEBUG
+                if (this.timeOnUnsafePlatform > this.unsafePlatformGracePeriod) {
+                    console.log("Tempo esgotado em plataforma insegura. Respawing...");
+                    if (this.checkpointManager && typeof this.spawnYaw !== 'undefined') {
+                        this.checkpointManager.respawnPlayer(this.camera, this, this.spawnYaw);
+                    } else {
+                        console.error("CheckpointManager ou spawnYaw não definidos no PlayerController!");
+                    }
+                    this.timeOnUnsafePlatform = 0; // Reset timer após respawn
+                }
+            } else {
+                // Jogador está em plataforma segura
+                this.timeOnUnsafePlatform = 0;
+            }
+            // --- Fim da Lógica da Plataforma Insegura ---
+
+        } else { 
+            // --- Air Movement (ou acabou de saltar) ---
+            this.timeOnUnsafePlatform = 0; // Reset timer se estiver no ar
+            let effectiveWishDir = wishDir.clone();
             if (isTouchingWall) {
-                // Projeta a direção desejada no plano da parede para evitar "subir"
-                // wishDir = wishDir - wallNormal * dot(wishDir, wallNormal)
                 const dot = effectiveWishDir.dot(wallNormalTHREE);
-                if (dot < 0) { // Só projeta se estiver a tentar mover-se *contra* a parede
+                if (dot < 0) { 
                     effectiveWishDir.subScaledVector(wallNormalTHREE, dot);
-                    // Re-normaliza a direção projetada se ela ainda tiver magnitude
                     if (effectiveWishDir.lengthSq() > 1e-6) {
                          effectiveWishDir.normalize();
                     } else {
-                         effectiveWishDir.set(0, 0, 0); // Anula o movimento se for diretamente na parede
+                         effectiveWishDir.set(0, 0, 0); 
                     }
                 }
-
-                 // Opcional: Reduzir ligeiramente a aceleração no ar ao tocar na parede
-                 // airAccel *= 0.8;
             }
-
-            // Usa a effectiveWishDir (modificada ou não) para acelerar no ar
-            let airAccel = this.airAccel;
-            // Opcional: Aumentar aceleração no ar se houver input (strafe jumping)
-            // if (wish.lengthSq() > 0) airAccel *= 2.5; // Cuidado com este valor
-            this._accelerate(currentVel, effectiveWishDir, airAccel, this.maxGroundSpeed * 1.2, dt); // Usa max speed ligeiramente maior no ar
+            let airAccelToUse = this.airAccel;
+            this._accelerate(currentVel, effectiveWishDir, airAccelToUse, this.maxGroundSpeed * 1.2, dt);
         }
 
-        // Aplica a velocidade horizontal calculada
         this.body.velocity.x = currentVel.x;
         this.body.velocity.z = currentVel.z;
-
-        // Atualiza a posição da câmera
         this.camera.position.copy(this.body.position);
+
+        // Atualiza o estado do chão para o próximo frame
+        this.wasOnGround = isOnGroundCurrentFrame;
     }
 
     _accelerate(vel, wishDir, accel, maxSpeed, dt) {
-        // Calcula a velocidade atual na direção desejada
         const currentSpeedInWishDir = vel.dot(wishDir);
-        // Calcula a velocidade a adicionar
         const addSpeed = maxSpeed - currentSpeedInWishDir;
 
-        // Se já estamos na velocidade máxima ou acima, não adiciona mais
         if (addSpeed <= 0) {
             return;
         }
 
-        // Calcula a aceleração a aplicar neste frame, limitada pela aceleração máxima
-        let accelSpeed = accel * dt * maxSpeed; // Ajuste Quake-like: accel * dt * max_vel
+        let accelSpeed = accel * dt * maxSpeed;
 
-        // Limita a aceleração para não exceder a velocidade máxima
         accelSpeed = Math.min(accelSpeed, addSpeed);
 
-        // Adiciona a velocidade acelerada à velocidade atual
         vel.addScaledVector(wishDir, accelSpeed);
     }
 }
