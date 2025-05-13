@@ -10,6 +10,7 @@ import CheckpointManager from './checkpoints.js';
 import { createTimer } from './timer.js';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from './collisionGroups.js';
 import { playMenuClickSound } from './utils/audioUtils.js'; // <-- Importa a função
+import { createFpsCounter } from './fps.js'; // <-- ADICIONE ESTA LINHA
 
 let currentLevelPath; 
 let currentLevelAudioContext = null; 
@@ -44,6 +45,7 @@ function onWindowResize() {
 // Inicializa o temporizador
 const timer = createTimer();
 timer.start();
+const fpsCounter = createFpsCounter(); // <-- ADICIONE ESTA LINHA
 
 // Elementos do DOM relacionados à UI
 const timerDisplayElement = document.getElementById('timerDisplay');
@@ -353,6 +355,14 @@ window.addEventListener('keydown', (event) => {
         if (noclipIndicator) {
             noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
         }
+        
+        const fpsElement = document.getElementById('fps'); // <-- ADICIONE ESTAS LINHAS
+        if (fpsElement) {
+            fpsElement.style.display = isUiVisible ? 'block' : 'none';
+            if (isUiVisible) {
+                fpsElement.textContent = `FPS: ${fpsCounter.getFps()}`;
+            }
+        }
     }
 
     // Toggle Noclip com '2'
@@ -452,10 +462,7 @@ async function loadLevel(levelPath) {
 // Loop com fixed‐timestep
 const FIXED = 1 / 60;
 let last = performance.now(),
-    acc = 0,
-    lastFpsUpdate = 0,
-    frames = 0,
-    fps = 0;
+    acc = 0;
 
 // Variáveis para controlar a sequência de luzes ORDENADA
 const sequenceInterval = 0.6; // Intervalo entre luzes para AMBAS as sequências
@@ -651,14 +658,11 @@ function animate(now) {
         timerDisplayElement.textContent = timer.formatTime(timer.getElapsedTime());
     }
 
-    // FPS counter (só atualiza o texto se estiver visível)
-    frames++;
-    if (now - lastFpsUpdate > 500) {
-        fps = Math.round((frames * 1000) / (now - lastFpsUpdate));
-        lastFpsUpdate = now;
-        frames = 0;
-        const fpsElement = document.getElementById('fps');
-        if (fpsElement && isUiVisible) fpsElement.textContent = `FPS: ${fps}`;
+    // FPS counter
+    fpsCounter.update(now); // <-- MODIFIQUE ESTA PARTE
+    const fpsElement = document.getElementById('fps');
+    if (fpsElement && isUiVisible) {
+        fpsElement.textContent = `FPS: ${fpsCounter.getFps()}`;
     }
 
     // Speedometer (agora chama a função separada)
