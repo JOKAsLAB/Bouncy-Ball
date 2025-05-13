@@ -3,28 +3,23 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
-// Torna a função async
-export async function createScene(world, checkpointManager, groundWallMaterial, camera) { // Adicione camera se precisar de som de chuva
-    // Usa await para esperar pela Promise de createBaseScene
-    const scene = await createBaseScene('overcast_soil_puresky_1k.hdr');
+export async function createScene(world, checkpointManager, groundWallMaterial, camera) {
+    const scene = await createBaseScene('overcast_soil_puresky_1k.hdr'); // Considere HDRI menor
     const movingPlatforms = [];
 
-    // --- Áudio de Fundo (Opcional para Nível 2) ---
+    // --- Áudio de Fundo ---
     let backgroundSound;
-    let audioListener; // Guardar para retornar
+    let audioListener;
     if (camera) {
         audioListener = new THREE.AudioListener();
         camera.add(audioListener);
-
         backgroundSound = new THREE.Audio(audioListener);
         const audioLoader = new THREE.AudioLoader();
         try {
-            // Substitua pelo seu arquivo de som do nível 2
             const buffer = await audioLoader.loadAsync('assets/sound/level2_background_sound.mp3');
             backgroundSound.setBuffer(buffer);
             backgroundSound.setLoop(true);
-            backgroundSound.setVolume(0.005); // Ajuste o volume conforme necessário (ex: 0.05)
-            // Tenta tocar o som. Pode precisar de interação do usuário em alguns navegadores.
+            backgroundSound.setVolume(0.05); // Ajuste se 0.005 for muito baixo
             if (!backgroundSound.isPlaying) {
                 backgroundSound.play();
             }
@@ -35,86 +30,68 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
     } else {
         console.warn("Câmera não fornecida para createScene (nível 2), áudio de fundo não será inicializado.");
     }
-    // --- Fim Áudio de Fundo ---
-
-    // --- Carregar Texturas PBR ---
+    
     const textureLoader = new THREE.TextureLoader();
 
-    // Texturas para Plataformas Móveis (PaintedWood003)
+    // --- Carregar Texturas PBR ---
+    // SUGESTÃO: Altere os caminhos para usar texturas de 512x512 se possível
+    // Ex: const movingWoodTexturePath = 'assets/textures/PaintedWood003_512-JPG/';
+    const movingWoodTexturePath = 'assets/textures/PaintedWood003_1K-JPG/';
     let movingWoodColorTexture = null;
     let movingWoodNormalTexture = null;
     let movingWoodRoughnessTexture = null;
     let movingWoodDisplacementTexture = null;
-    const movingWoodTexturePath = 'assets/textures/PaintedWood003_1K-JPG/';
 
     try {
         movingWoodColorTexture = await textureLoader.loadAsync(`${movingWoodTexturePath}PaintedWood003_1K-JPG_Color.jpg`);
         movingWoodColorTexture.colorSpace = THREE.SRGBColorSpace;
         movingWoodColorTexture.wrapS = THREE.RepeatWrapping;
         movingWoodColorTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura de Cor (Wood para plataformas móveis) carregada.");
 
         movingWoodNormalTexture = await textureLoader.loadAsync(`${movingWoodTexturePath}PaintedWood003_1K-JPG_NormalGL.jpg`);
         movingWoodNormalTexture.wrapS = THREE.RepeatWrapping;
         movingWoodNormalTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Normal (Wood para plataformas móveis) carregada.");
 
         movingWoodRoughnessTexture = await textureLoader.loadAsync(`${movingWoodTexturePath}PaintedWood003_1K-JPG_Roughness.jpg`);
         movingWoodRoughnessTexture.wrapS = THREE.RepeatWrapping;
         movingWoodRoughnessTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Roughness (Wood para plataformas móveis) carregada.");
 
         movingWoodDisplacementTexture = await textureLoader.loadAsync(`${movingWoodTexturePath}PaintedWood003_1K-JPG_Displacement.jpg`);
         movingWoodDisplacementTexture.wrapS = THREE.RepeatWrapping;
         movingWoodDisplacementTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Displacement (Wood para plataformas móveis) carregada.");
-
     } catch (error) {
-        console.error("Erro ao carregar uma ou mais texturas PBR (Wood Móvel):", error);
+        console.error("Erro ao carregar texturas PBR (Wood Móvel):", error);
     }
 
-    // Texturas para Plataformas de Checkpoint Estáticas (PaintedWood009B)
+    // Ex: const staticWoodTexturePath = 'assets/textures/PaintedWood009B_512-JPG/';
+    const staticWoodTexturePath = 'assets/textures/PaintedWood009B_1K-JPG/';
     let staticWoodColorTexture = null;
     let staticWoodNormalTexture = null;
     let staticWoodRoughnessTexture = null;
     let staticWoodDisplacementTexture = null;
-    // let staticWoodAoTexture = null; // Descomente se tiver AO map
-    const staticWoodTexturePath = 'assets/textures/PaintedWood009B_1K-JPG/';
 
     try {
         staticWoodColorTexture = await textureLoader.loadAsync(`${staticWoodTexturePath}PaintedWood009B_1K-JPG_Color.jpg`);
         staticWoodColorTexture.colorSpace = THREE.SRGBColorSpace;
         staticWoodColorTexture.wrapS = THREE.RepeatWrapping;
         staticWoodColorTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura de Cor (Wood para plataformas estáticas) carregada.");
-
-        // staticWoodAoTexture = await textureLoader.loadAsync(`${staticWoodTexturePath}PaintedWood009B_1K-JPG_AmbientOcclusion.jpg`);
-        // staticWoodAoTexture.wrapS = THREE.RepeatWrapping;
-        // staticWoodAoTexture.wrapT = THREE.RepeatWrapping;
-        // console.log("Textura AO (Wood para plataformas estáticas) carregada.");
 
         staticWoodNormalTexture = await textureLoader.loadAsync(`${staticWoodTexturePath}PaintedWood009B_1K-JPG_NormalGL.jpg`);
         staticWoodNormalTexture.wrapS = THREE.RepeatWrapping;
         staticWoodNormalTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Normal (Wood para plataformas estáticas) carregada.");
 
         staticWoodRoughnessTexture = await textureLoader.loadAsync(`${staticWoodTexturePath}PaintedWood009B_1K-JPG_Roughness.jpg`);
         staticWoodRoughnessTexture.wrapS = THREE.RepeatWrapping;
         staticWoodRoughnessTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Roughness (Wood para plataformas estáticas) carregada.");
 
         staticWoodDisplacementTexture = await textureLoader.loadAsync(`${staticWoodTexturePath}PaintedWood009B_1K-JPG_Displacement.jpg`);
         staticWoodDisplacementTexture.wrapS = THREE.RepeatWrapping;
         staticWoodDisplacementTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Displacement (Wood para plataformas estáticas) carregada.");
-
     } catch (error) {
-        console.error("Erro ao carregar uma ou mais texturas PBR (Wood Estático):", error);
+        console.error("Erro ao carregar texturas PBR (Wood Estático):", error);
     }
 
-
     // --- Materiais ---
-    // Material para plataformas MÓVEIS (PaintedWood003)
     const movingPaintedWoodMaterial = new THREE.MeshPhysicalMaterial({
         map: movingWoodColorTexture,
         normalMap: movingWoodNormalTexture,
@@ -122,63 +99,56 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         roughnessMap: movingWoodRoughnessTexture,
         metalness: 0.0,
         displacementMap: movingWoodDisplacementTexture,
-        displacementScale: 0.005, // Ajuste conforme necessário para PaintedWood003
-        displacementBias: -0.0025, // Ajuste conforme necessário para PaintedWood003
+        displacementScale: 0.005,
+        displacementBias: -0.0025,
     });
-    if (!movingWoodColorTexture) movingPaintedWoodMaterial.color = new THREE.Color(0x8B4513); // Fallback
+    if (!movingWoodColorTexture) movingPaintedWoodMaterial.color = new THREE.Color(0x8B4513);
 
-    // Material para plataformas de CHECKPOINT ESTÁTICAS (PaintedWood009B)
     const staticCheckpointWoodMaterial = new THREE.MeshPhysicalMaterial({
         map: staticWoodColorTexture,
-        // aoMap: staticWoodAoTexture, // Descomente se usar
-        // aoMapIntensity: 1.0,
         normalMap: staticWoodNormalTexture,
-        normalScale: new THREE.Vector2(1.0, 1.0), // Ajuste conforme necessário para PaintedWood009B
+        normalScale: new THREE.Vector2(1.0, 1.0),
         roughnessMap: staticWoodRoughnessTexture,
-        metalness: 0.0, // Madeira geralmente não é metálica
+        metalness: 0.0,
         displacementMap: staticWoodDisplacementTexture,
-        displacementScale: 0.01, // Ajuste conforme necessário para PaintedWood009B
-        displacementBias: -0.005, // Ajuste conforme necessário para PaintedWood009B
+        displacementScale: 0.01,
+        displacementBias: -0.005,
     });
-    if (!staticWoodColorTexture) staticCheckpointWoodMaterial.color = new THREE.Color(0xffa500); // Fallback
+    if (!staticWoodColorTexture) staticCheckpointWoodMaterial.color = new THREE.Color(0xffa500);
 
-    // Materiais de checkpoint VISUAL (os triggers transparentes)
     const checkpointVisualMaterialBase = new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness: 0.9, metalness: 0.0, transparent: true, opacity: 0.5 });
     const finalCheckpointVisualMaterialBase = new THREE.MeshPhysicalMaterial({ color: 0xffff00, roughness: 0.3, metalness: 0.6, transparent: true, opacity: 0.5 });
 
     // --- Efeito de Chuva ---
-    const rainCount = 25000; // SUGESTÃO: Reduzir para um valor entre 5000-15000
+    const rainCount = 8000; // <-- VALOR REDUZIDO SIGNIFICATIVAMENTE
     const rainGeometry = new THREE.BufferGeometry();
     const rainVertices = [];
-    const rainSpreadX = 100; // Quão espalhada a chuva é em X 
-    const rainSpreadZ = 100; // Quão espalhada a chuva é em Z
-    const rainHeight = 30; // Altura de onde a chuva começa a cair
+    const rainSpreadX = 100; 
+    const rainSpreadZ = 100; 
+    const rainHeight = 30; 
 
     for (let i = 0; i < rainCount; i++) {
-        const x = Math.random() * rainSpreadX - rainSpreadX / 2; // Usa rainSpreadX
-        const y = Math.random() * rainHeight; // Começam em alturas variadas
-        const z = Math.random() * rainSpreadZ - rainSpreadZ / 2; // Usa rainSpreadZ
+        const x = Math.random() * rainSpreadX - rainSpreadX / 2;
+        const y = Math.random() * rainHeight; 
+        const z = Math.random() * rainSpreadZ - rainSpreadZ / 2;
         rainVertices.push(x, y, z);
     }
-
     rainGeometry.setAttribute('position', new THREE.Float32BufferAttribute(rainVertices, 3));
 
     const rainMaterial = new THREE.PointsMaterial({
-        color: 0x6ca0dc, // Cor azulada para a chuva (experimente outros tons de azul)
-        size: 0.05,       // Tamanho das gotas BEM MENOR
+        color: 0x6ca0dc,
+        size: 0.05,
         transparent: true,
-        opacity: 0.6,    // Opacidade um pouco menor para um efeito mais suave
-        sizeAttenuation: true // Gotas mais distantes parecem menores
+        opacity: 0.6,
+        sizeAttenuation: true
     });
-
     const rain = new THREE.Points(rainGeometry, rainMaterial);
     scene.add(rain);
     // --- Fim Efeito de Chuva ---
 
     const platforms = [
-        // Plataformas de Checkpoint (estáticas) - usarão staticCheckpointWoodMaterial
+        // ... (definição das plataformas como antes) ...
         { position: [0, 1, 0], size: [10, 0.5, 5], isCheckpoint: true },
-        // Plataformas Móveis - usarão movingPaintedWoodMaterial
         {
             position: [0, 1, 5], size: [2.5, 0.1, 2.5], isMoving: true,
             movement: { axis: 'x', distance: 2.5, speed: 1, offset: 0 }
@@ -199,9 +169,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             position: [0, 1, 25], size: [2.5, 0.1, 2.5], isMoving: true,
             movement: { axis: 'x', distance: 2.5, speed: 1, offset: 1 }
         },
-        // Plataforma de Checkpoint
         { position: [0, 1, 30], size: [10, 0.5, 5], isCheckpoint: true },
-        // Plataformas Móveis
         {
             position: [0, 1, 35], size: [2.5, 0.1, 2.5], isMoving: true,
             movement: { axis: 'x', distance: 3.75, speed: 1, offset: -3 }
@@ -218,9 +186,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             position: [0, 1, 55], size: [2.5, 0.1, 2.5], isMoving: true,
             movement: { axis: 'x', distance: 3.75, speed: 1, offset: 4 }
         },
-        // Plataforma de Checkpoint
         { position: [0, 1, 60], size: [10, 0.5, 5], isCheckpoint: true },
-        // Plataformas Móveis
         {
             position: [0, 1, 65], size: [2.5, 0.1, 2.5], isMoving: true,
             movement: { axis: 'x', distance: 5, speed: 1, offset: -3 }
@@ -237,27 +203,20 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             position: [0, 1, 85], size: [2.5, 0.1, 2.5], isMoving: true,
             movement: { axis: 'x', distance: 5, speed: 1.5, offset: 1 }
         },
-        // Plataforma de Checkpoint Final
         { position: [0, 1, 90], size: [10, 0.5, 5], isCheckpoint: true, isFinal: true },
     ];
 
     platforms.forEach((platformData) => {
         let baseMaterialToUse;
-
         if (platformData.isMoving) {
             baseMaterialToUse = movingPaintedWoodMaterial;
         } else if (platformData.isCheckpoint) {
-            baseMaterialToUse = staticCheckpointWoodMaterial; // Usar o novo material de madeira para checkpoints
+            baseMaterialToUse = staticCheckpointWoodMaterial;
         } else {
-            // Fallback para outras plataformas estáticas não checkpoint (se houver)
-            // Você pode definir um material padrão diferente aqui se necessário
-            baseMaterialToUse = staticCheckpointWoodMaterial; // Ou um material padrão diferente
+            baseMaterialToUse = staticCheckpointWoodMaterial; 
         }
 
         const geometry = new THREE.BoxGeometry(...platformData.size);
-        // Geometria com mais segmentos para melhor displacement (opcional, mas recomendado)
-        // const geometry = new THREE.BoxGeometry(platformData.size[0], platformData.size[1], platformData.size[2], Math.floor(platformData.size[0]*1.5), 1, Math.floor(platformData.size[2]*1.5));
-
         const platformSpecificMaterial = baseMaterialToUse.clone();
         const platform = new THREE.Mesh(geometry, platformSpecificMaterial);
         platform.position.set(...platformData.position);
@@ -268,40 +227,39 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         if (platformSpecificMaterial.map) {
             let repeatScaleFactor;
             if (platformData.isMoving) {
-                repeatScaleFactor = 3.5; // Para PaintedWood003 nas plataformas móveis
+                repeatScaleFactor = 3.5; 
             } else {
-                repeatScaleFactor = 7.5;   // Para PaintedWood009B nas plataformas de checkpoint (ajuste conforme necessário)
+                repeatScaleFactor = 7.5;   
             }
-            
             const repeatFactorX = platformData.size[0] / repeatScaleFactor;
             const repeatFactorZ = platformData.size[2] / repeatScaleFactor;
 
             platformSpecificMaterial.map = platformSpecificMaterial.map.clone();
-            platformSpecificMaterial.map.needsUpdate = true;
+            // platformSpecificMaterial.map.needsUpdate = true; // Remover
             platformSpecificMaterial.map.repeat.set(repeatFactorX, repeatFactorZ);
 
-            if (platformSpecificMaterial.aoMap) { // Clonar AO map se existir
-                platformSpecificMaterial.aoMap = platformSpecificMaterial.aoMap.clone();
-                platformSpecificMaterial.aoMap.needsUpdate = true;
-                platformSpecificMaterial.aoMap.repeat.set(repeatFactorX, repeatFactorZ);
-            }
+            // Não há aoMap carregado, então esta verificação é suficiente
+            // if (platformSpecificMaterial.aoMap) { ... } 
+
             if (platformSpecificMaterial.normalMap) {
                 platformSpecificMaterial.normalMap = platformSpecificMaterial.normalMap.clone();
-                platformSpecificMaterial.normalMap.needsUpdate = true;
+                // platformSpecificMaterial.normalMap.needsUpdate = true; // Remover
                 platformSpecificMaterial.normalMap.repeat.set(repeatFactorX, repeatFactorZ);
             }
             if (platformSpecificMaterial.roughnessMap) {
                 platformSpecificMaterial.roughnessMap = platformSpecificMaterial.roughnessMap.clone();
-                platformSpecificMaterial.roughnessMap.needsUpdate = true;
+                // platformSpecificMaterial.roughnessMap.needsUpdate = true; // Remover
                 platformSpecificMaterial.roughnessMap.repeat.set(repeatFactorX, repeatFactorZ);
             }
-            if (platformSpecificMaterial.displacementMap) {
+            // Avaliar se o displacementMap precisa de repeat individualizado
+            if (platformSpecificMaterial.displacementMap && platformSpecificMaterial.displacementScale > 0) { // Adicionar verificação de displacementScale
                 platformSpecificMaterial.displacementMap = platformSpecificMaterial.displacementMap.clone();
-                platformSpecificMaterial.displacementMap.needsUpdate = true;
+                // platformSpecificMaterial.displacementMap.needsUpdate = true; // Remover
                 platformSpecificMaterial.displacementMap.repeat.set(repeatFactorX, repeatFactorZ);
             }
         }
 
+        // ... (restante da lógica da plataforma, corpo físico e checkpoint como antes) ...
         const bodyType = platformData.movement ? CANNON.Body.KINEMATIC : CANNON.Body.STATIC;
         const body = new CANNON.Body({
             type: bodyType,
@@ -311,9 +269,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             collisionFilterGroup: GROUP_GROUND,
             collisionFilterMask: GROUP_PLAYER
         });
-        // Adiciona a propriedade isUnsafePlatform se NÃO for um checkpoint
-        // No nível 2, as plataformas móveis são as "inseguras"
-        if (platformData.isMoving && !platformData.isCheckpoint) { // Garante que não é um checkpoint móvel (se existir tal conceito)
+        if (platformData.isMoving && !platformData.isCheckpoint) {
             body.isUnsafePlatform = true;
         }
         world.addBody(body);
@@ -352,15 +308,14 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         }
     });
 
-    // Retorna a cena, plataformas móveis, o som (se houver) e as partículas de chuva
     return { 
         scene, 
         movingPlatforms, 
-        backgroundSound, // Retorna mesmo que seja undefined
-        audioListener,   // Retorna mesmo que seja undefined
-        rainParticles: rain, // Adiciona as partículas de chuva ao retorno
-        rainHeight: rainHeight, // Opcional: retornar para main.js se precisar
-        rainSpreadX: rainSpreadX, // Opcional: retornar para main.js se precisar
-        rainSpreadZ: rainSpreadZ  // Opcional: retornar para main.js se precisar
+        backgroundSound,
+        audioListener,
+        rainParticles: rain,
+        rainHeight: rainHeight,
+        rainSpreadX: rainSpreadX,
+        rainSpreadZ: rainSpreadZ
     };
 }

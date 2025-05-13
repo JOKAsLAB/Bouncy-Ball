@@ -52,6 +52,8 @@ const timerDisplayElement = document.getElementById('timerDisplay');
 const finalTimeDisplayElement = document.getElementById('finalTimeDisplay');
 const infoElement = document.getElementById('info'); // Obter referência ao elemento info
 const noclipIndicator = document.getElementById('noclipIndicator'); // Referência ao indicador de noclip
+const fpsElement = document.getElementById('fps'); // Cache this
+const speedElement = document.getElementById('speedometer'); // Cache this
 
 // Estado de visibilidade da UI
 let isUiVisible = true;
@@ -356,7 +358,6 @@ window.addEventListener('keydown', (event) => {
             noclipIndicator.style.display = (isUiVisible && playerCtrl.noclip) ? 'block' : 'none';
         }
         
-        const fpsElement = document.getElementById('fps'); // <-- ADICIONE ESTAS LINHAS
         if (fpsElement) {
             fpsElement.style.display = isUiVisible ? 'block' : 'none';
             if (isUiVisible) {
@@ -403,7 +404,6 @@ renderer.domElement.addEventListener('click', () => {
 
 // Função separada para atualizar o velocímetro (para reutilização)
 function updateSpeedometer() {
-    const speedElement = document.getElementById('speedometer');
     if (!speedElement || !isUiVisible) return; // Só atualiza se o elemento existe e a UI está visível
 
     let speedText = 'Speed: ...';
@@ -659,17 +659,15 @@ function animate(now) {
     }
 
     // FPS counter
-    fpsCounter.update(now); // <-- MODIFIQUE ESTA PARTE
-    const fpsElement = document.getElementById('fps');
+    fpsCounter.update(now); 
     if (fpsElement && isUiVisible) {
         fpsElement.textContent = `FPS: ${fpsCounter.getFps()}`;
     }
 
     // Speedometer (agora chama a função separada)
     if (gameShouldUpdate && isUiVisible) {
-        updateSpeedometer();
+        updateSpeedometer(); 
     } else if (isUiVisible) {
-        const speedElement = document.getElementById('speedometer');
         if (speedElement) speedElement.textContent = 'Speed: 0.00 u/s';
     }
 

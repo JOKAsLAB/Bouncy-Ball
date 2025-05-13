@@ -3,31 +3,26 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
-// Torna a função async
-export async function createScene(world, checkpointManager, groundWallMaterial, camera) { // Adicione camera como parâmetro
-    // Usa await para esperar pela Promise de createBaseScene
-    const scene = await createBaseScene('autumn_field_puresky_1k.hdr');
+export async function createScene(world, checkpointManager, groundWallMaterial, camera) {
+    const scene = await createBaseScene('autumn_field_puresky_1k.hdr'); // Considere um HDRI menor se o desempenho for crítico
     const movingPlatforms = [];
 
     // --- Áudio de Fundo ---
     let backgroundSound;
-    let listener; // Declare listener para retorno
-    if (camera) { // Verifica se a câmera foi passada
+    let listener; 
+    if (camera) {
         listener = new THREE.AudioListener();
-        camera.add(listener); // Adiciona o listener à câmera
+        camera.add(listener); 
 
         backgroundSound = new THREE.Audio(listener);
         const audioLoader = new THREE.AudioLoader();
 
         try {
+            // Considere usar .mp3 com bitrate mais baixo se o tamanho do ficheiro for uma preocupação
             const buffer = await audioLoader.loadAsync('assets/sound/level1_background_sound.mp3');
             backgroundSound.setBuffer(buffer);
             backgroundSound.setLoop(true);
-            backgroundSound.setVolume(0.005); // <--- ALTERE ESTE VALOR (ex: 0.1 para mais baixo)
-            // Para garantir que o som comece após uma interação do usuário (política do navegador)
-            // idealmente, o play() seria chamado após um clique ou evento similar.
-            // Mas para um jogo carregado, podemos tentar tocar imediatamente.
-            // Se não funcionar, você precisará de um "play" button ou similar.
+            backgroundSound.setVolume(0.05); // Aumentei um pouco, ajuste conforme necessário
             if (!backgroundSound.isPlaying) {
                 backgroundSound.play();
             }
@@ -38,79 +33,62 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
     } else {
         console.warn("Câmera não fornecida para createScene, áudio de fundo não será inicializado.");
     }
-    // --- Fim Áudio de Fundo ---
-
-    // --- Carregar Texturas PBR ---
+    
     const textureLoader = new THREE.TextureLoader();
 
-    // Texturas para Plataformas Grandes (agora Plastic015A)
+    // --- Carregar Texturas PBR ---
+    const largePlasticTexturePath = 'assets/textures/Plastic015A_1K-JPG/';
+    const smallPlasticTexturePath = 'assets/textures/Plastic016B_1K-JPG/';
+
     let largePlasticColorTexture = null;
     let largePlasticNormalTexture = null;
     let largePlasticRoughnessTexture = null;
     let largePlasticDisplacementTexture = null;
-    const largePlasticTexturePath = 'assets/textures/Plastic015A_1K-JPG/';
+
+    let smallPlasticColorTexture = null;
+    let smallPlasticNormalTexture = null;
+    let smallPlasticRoughnessTexture = null;
+    let smallPlasticDisplacementTexture = null;
 
     try {
         largePlasticColorTexture = await textureLoader.loadAsync(`${largePlasticTexturePath}Plastic015A_1K-JPG_Color.jpg`);
         largePlasticColorTexture.colorSpace = THREE.SRGBColorSpace;
         largePlasticColorTexture.wrapS = THREE.RepeatWrapping;
         largePlasticColorTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura de Cor (Large Plastic015A) carregada.");
 
         largePlasticNormalTexture = await textureLoader.loadAsync(`${largePlasticTexturePath}Plastic015A_1K-JPG_NormalGL.jpg`);
         largePlasticNormalTexture.wrapS = THREE.RepeatWrapping;
         largePlasticNormalTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Normal (Large Plastic015A) carregada.");
 
         largePlasticRoughnessTexture = await textureLoader.loadAsync(`${largePlasticTexturePath}Plastic015A_1K-JPG_Roughness.jpg`);
         largePlasticRoughnessTexture.wrapS = THREE.RepeatWrapping;
         largePlasticRoughnessTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Roughness (Large Plastic015A) carregada.");
 
         largePlasticDisplacementTexture = await textureLoader.loadAsync(`${largePlasticTexturePath}Plastic015A_1K-JPG_Displacement.jpg`);
         largePlasticDisplacementTexture.wrapS = THREE.RepeatWrapping;
         largePlasticDisplacementTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Displacement (Large Plastic015A) carregada.");
 
-    } catch (error) {
-        console.error("Erro ao carregar uma ou mais texturas PBR (Large Plastic015A):", error);
-    }
-
-    // Texturas para Plataformas Pequenas (Plastic016B) - Mantêm-se
-    let smallPlasticColorTexture = null;
-    let smallPlasticNormalTexture = null;
-    let smallPlasticRoughnessTexture = null;
-    let smallPlasticDisplacementTexture = null;
-    const smallPlasticTexturePath = 'assets/textures/Plastic016B_1K-JPG/';
-
-    try {
         smallPlasticColorTexture = await textureLoader.loadAsync(`${smallPlasticTexturePath}Plastic016B_1K-JPG_Color.jpg`);
         smallPlasticColorTexture.colorSpace = THREE.SRGBColorSpace;
         smallPlasticColorTexture.wrapS = THREE.RepeatWrapping;
         smallPlasticColorTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura de Cor (Small Plastic016B) carregada.");
 
         smallPlasticNormalTexture = await textureLoader.loadAsync(`${smallPlasticTexturePath}Plastic016B_1K-JPG_NormalGL.jpg`);
         smallPlasticNormalTexture.wrapS = THREE.RepeatWrapping;
         smallPlasticNormalTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Normal (Small Plastic016B) carregada.");
 
         smallPlasticRoughnessTexture = await textureLoader.loadAsync(`${smallPlasticTexturePath}Plastic016B_1K-JPG_Roughness.jpg`);
         smallPlasticRoughnessTexture.wrapS = THREE.RepeatWrapping;
         smallPlasticRoughnessTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Roughness (Small Plastic016B) carregada.");
 
         smallPlasticDisplacementTexture = await textureLoader.loadAsync(`${smallPlasticTexturePath}Plastic016B_1K-JPG_Displacement.jpg`);
         smallPlasticDisplacementTexture.wrapS = THREE.RepeatWrapping;
         smallPlasticDisplacementTexture.wrapT = THREE.RepeatWrapping;
-        console.log("Textura Displacement (Small Plastic016B) carregada.");
-
     } catch (error) {
-        console.error("Erro ao carregar uma ou mais texturas PBR (Small Plastic016B):", error);
+        console.error("Erro ao carregar texturas PBR:", error);
     }
 
     // --- Materiais ---
-    // Material para as plataformas grandes (agora Plastic015A)
     const largePlasticTexturedMaterial = new THREE.MeshPhysicalMaterial({
         map: largePlasticColorTexture,
         normalMap: largePlasticNormalTexture,
@@ -121,14 +99,11 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         displacementScale: 0.005, 
         displacementBias: -0.0025, 
         specularIntensity: 0.4,
-        // specularColor: new THREE.Color(0xffffff), 
-        clearcoat: 1.0, // CORRIGIDO: de 'coat' para 'clearcoat'
-        clearcoatRoughness: 0.1, // EXPERIMENTE: Para um verniz mais brilhante, defina um valor baixo.
-                                 // Se você quiser usar um mapa, seria clearcoatRoughnessMap
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
     });
     if (!largePlasticColorTexture) largePlasticTexturedMaterial.color = new THREE.Color(0xdddddd);
 
-    // Material para as plataformas pequenas (Plastic016B) - Mantém-se
     const smallPlasticTexturedMaterial = new THREE.MeshPhysicalMaterial({
         map: smallPlasticColorTexture,
         normalMap: smallPlasticNormalTexture,
@@ -139,13 +114,11 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         displacementScale: 0.005,
         displacementBias: -0.0025,
         specularIntensity: 0.4,
-        // specularColor: new THREE.Color(0xffffff),
-        clearcoat: 1.0, // CORRIGIDO: de 'coat' para 'clearcoat'
-        clearcoatRoughness: 0.1, // EXPERIMENTE
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
     });
     if (!smallPlasticColorTexture) smallPlasticTexturedMaterial.color = new THREE.Color(0xcccccc);
 
-    // Material para checkpoints normais
     const checkpointMaterialBase = new THREE.MeshPhysicalMaterial({
         color: 0xff0000,
         roughness: 0.9,
@@ -153,7 +126,6 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         transparent: true,
     });
 
-    // Material para o checkpoint final
     const finalCheckpointMaterialBase = new THREE.MeshPhysicalMaterial({
         color: 0xffff00,
         roughness: 0.3,
@@ -162,8 +134,6 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
     });
 
     const platforms = [
-        // As plataformas grandes (isLargePlatform) usarão largePlasticTexturedMaterial
-        // As plataformas pequenas usarão smallPlasticTexturedMaterial
         { position: [0, 1, 0], size: [10, 0.5, 5], isCheckpoint: true }, 
         { position: [0, 1, 5], size: [2.5, 0.1, 2.5] }, 
         { position: [1, 1, 10], size: [2.5, 0.1, 2.5] }, 
@@ -188,46 +158,38 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
 
     platforms.forEach(({ position, size, isCheckpoint, isFinal = false }) => {
         const isLargePlatform = size[0] === 10;
-        // Escolhe o material base: plástico grande para as grandes, plástico pequeno para as pequenas
         const baseMaterialToUse = isLargePlatform ? largePlasticTexturedMaterial : smallPlasticTexturedMaterial;
         
         const geometry = new THREE.BoxGeometry(...size);
         
         const platformSpecificMaterial = baseMaterialToUse.clone();
         
-        const platform = new THREE.Mesh(geometry, platformSpecificMaterial);
-
-        // Ajustar a repetição da textura para a plataforma atual
-        const repeatScaleFactor = isLargePlatform ? 5 : 3; // Mantém os valores definidos anteriormente
+        const repeatScaleFactor = isLargePlatform ? 5 : 3; 
         const repeatFactorX = size[0] / repeatScaleFactor;
         const repeatFactorZ = size[2] / repeatScaleFactor;
 
         if (platformSpecificMaterial.map) {
             platformSpecificMaterial.map = platformSpecificMaterial.map.clone();
-            platformSpecificMaterial.map.needsUpdate = true;
             platformSpecificMaterial.map.repeat.set(repeatFactorX, repeatFactorZ);
         }
         if (platformSpecificMaterial.normalMap) {
             platformSpecificMaterial.normalMap = platformSpecificMaterial.normalMap.clone();
-            platformSpecificMaterial.normalMap.needsUpdate = true;
             platformSpecificMaterial.normalMap.repeat.set(repeatFactorX, repeatFactorZ);
         }
         if (platformSpecificMaterial.roughnessMap) {
             platformSpecificMaterial.roughnessMap = platformSpecificMaterial.roughnessMap.clone();
-            platformSpecificMaterial.roughnessMap.needsUpdate = true;
             platformSpecificMaterial.roughnessMap.repeat.set(repeatFactorX, repeatFactorZ);
         }
-        if (platformSpecificMaterial.displacementMap) {
+        if (platformSpecificMaterial.displacementMap && platformSpecificMaterial.displacementScale > 0) {
             platformSpecificMaterial.displacementMap = platformSpecificMaterial.displacementMap.clone();
-            platformSpecificMaterial.displacementMap.needsUpdate = true;
             platformSpecificMaterial.displacementMap.repeat.set(repeatFactorX, repeatFactorZ);
         }
         if (platformSpecificMaterial.clearcoatRoughnessMap) { 
              platformSpecificMaterial.clearcoatRoughnessMap = platformSpecificMaterial.clearcoatRoughnessMap.clone();
-             platformSpecificMaterial.clearcoatRoughnessMap.needsUpdate = true;
              platformSpecificMaterial.clearcoatRoughnessMap.repeat.set(repeatFactorX, repeatFactorZ);
         }
             
+        const platform = new THREE.Mesh(geometry, platformSpecificMaterial);
         platform.position.set(...position);
         platform.castShadow = true;
         platform.receiveShadow = true;
@@ -242,7 +204,6 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             collisionFilterGroup: GROUP_GROUND,
             collisionFilterMask: GROUP_PLAYER
         });
-        // Adiciona a propriedade isUnsafePlatform se NÃO for um checkpoint
         if (!isCheckpoint) {
             body.isUnsafePlatform = true;
         }
@@ -273,6 +234,5 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         }
     });
 
-    // Retorna a cena, plataformas móveis e o som de fundo para possível controle externo
-    return { scene, movingPlatforms, backgroundSound, audioListener: listener }; // Adicione audioListener ao retorno
+    return { scene, movingPlatforms, backgroundSound, audioListener: listener };
 }
