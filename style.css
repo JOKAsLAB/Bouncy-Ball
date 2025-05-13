@@ -41,15 +41,15 @@ canvas
 
 /* Inner container for the menu box */
 #levelCompleteMenu > div {
-    background: rgba(30, 30, 30, 0.85); /* Dark semi-transparent background */
+    background: rgba(30, 30, 30, 0); /* Dark semi-transparent background */
     padding: 40px 60px; /* Padding like pause menu */
     border-radius: 15px; /* Rounded corners like pause menu */
     display: flex;
     flex-direction: column;
     gap: 25px; /* Gap like pause menu */
     align-items: center; /* Center items horizontally */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border */
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Soft shadow */
+    border: 1px solid rgba(255, 255, 255, 0); /* Subtle white border */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); /* Soft shadow */
     color: #ffffff;
     min-width: 300px; /* Ensure a minimum width */
 }
