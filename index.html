@@ -12,7 +12,9 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: linear-gradient(to bottom, #2c3e50, #4ca1af);
+      background: rgba(0, 0, 0, 0.5); /* Novo fundo como no pauseMenu */
+      backdrop-filter: blur(5px); /* Efeito de blur como no pauseMenu */
+      -webkit-backdrop-filter: blur(5px); /* Suporte Safari para blur */
       margin: 0;
       font-family: sans-serif;
       color: #ffffff; /* Cor padrão do texto */
@@ -126,29 +128,30 @@
 <body>
   <!-- Menu Principal Container -->
   <div class="menu-container" style="
-    background: rgba(30, 30, 30, 0.85);
+    background: rgba(30, 30, 30, 0); /* Fundo da caixa transparente como no pauseMenu */
     padding: 40px 60px;
     border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 25px; /* Gap como no pauseMenu */
     align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0); /* Borda transparente como no pauseMenu */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); /* Sombra transparente como no pauseMenu */
     color: #ffffff;
   ">
     <h1 style="
-        margin: 0 0 10px 0;
-        font-size: 2.5em;
-        font-weight: 300;
-        letter-spacing: 1px;
+        margin: 0 0 15px 0; /* Aumentei a margem inferior um pouco */
+        font-size: 3.5em; /* Aumentado o tamanho da fonte */
+        font-weight: 600; /* Um pouco mais de peso na fonte */
+        letter-spacing: 2px; /* Aumentado o espaçamento entre letras */
         color: #ffffff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Adicionada sombra ao texto */
     ">Bouncy Ball</h1>
 
     <div class="menu-buttons" style="
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 20px; /* Mantido, mas pode ajustar para 25px se preferir o espaçamento exato dos itens do pauseMenu */
         align-items: center;
     ">
       <button id="playButton" style="
@@ -177,7 +180,7 @@
             text-align: center;
       ">Opções</button>
 
-      <button id="creditsButton" style="
+      <button id="howToPlayButton" style="
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
@@ -188,7 +191,33 @@
             transition: background-color 0.3s ease, border-color 0.3s ease;
             width: 220px;
             text-align: center;
-      ">Créditos</button>
+      ">Como Jogar</button>
+
+      <button id="sourceCodeButton" style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            width: 220px;
+            text-align: center;
+      ">Código Fonte</button>
+
+      <button id="demoButton" style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            width: 220px;
+            text-align: center;
+      ">Demo</button>
     </div>
   </div>
 
@@ -269,6 +298,42 @@
     </div>
   </div>
 
+  <!-- Menu "Como Jogar" Container -->
+  <div id="howToPlayMenu" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 1002; justify-content: center; align-items: center; flex-direction: column; font-family: sans-serif; color: #ffffff;">
+    <div style="background: rgba(30,30,30,0.85); padding: 30px 50px; border-radius: 15px; display: flex; flex-direction: column; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); min-width: 450px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
+        <h2 style="margin: 0 0 15px 0; font-size: 2em; font-weight: 300; letter-spacing: 1px;">Como Jogar</h2>
+        
+        <fieldset style="border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+            <legend style="padding: 0 10px; color: #ccc; font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Movimento Básico</legend>
+            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.95em; line-height: 1.6;">
+                <li><strong>W:</strong> Mover para Frente</li>
+                <li><strong>S:</strong> Mover para Trás</li>
+                <li><strong>A:</strong> Mover para Esquerda</li>
+                <li><strong>D:</strong> Mover para Direita</li>
+                <li><strong>Barra de Espaço:</strong> Saltar</li>
+                <li><strong>Mouse:</strong> Olhar ao redor</li>
+            </ul>
+        </fieldset>
+
+        <fieldset style="border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+            <legend style="padding: 0 10px; color: #ccc; font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Objetivo</legend>
+            <p style="font-size: 0.95em; line-height: 1.6; text-align: left; margin:0;">Navegue pelas plataformas e alcance o checkpoint final (amarelo) para completar o nível. Checkpoints vermelhos salvam seu progresso.</p>
+        </fieldset>
+
+        <fieldset style="border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+            <legend style="padding: 0 10px; color: #ccc; font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Controles do Jogo</legend>
+            <ul style="list-style: none; padding: 0; margin: 0; text-align: left; font-size: 0.95em; line-height: 1.6;">
+                <li><strong>ESC:</strong> Pausar o jogo / Voltar ao menu anterior</li>
+                <li><strong>1:</strong> Mostrar/Esconder UI (Temporizador, FPS, etc.)</li>
+                <li><strong>2:</strong> Ativar/Desativar Noclip (Modo Fantasma)</li>
+                <li><strong>3:</strong> Mostrar/Esconder Checkpoints</li>
+            </ul>
+        </fieldset>
+        
+        <button id="backFromHowToPlayBtn" style="background: rgba(100,100,100,0.2); border: 1px solid rgba(255,255,255,0.5); color: #ffffff; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; transition: background-color 0.3s ease, border-color 0.3s ease; width: 200px; text-align: center; margin-top: 15px;">Voltar</button>
+    </div>
+  </div>
+
   <!-- Novo container para níveis -->
   <div id="levelsContainer" style="display: none;"></div>
 
@@ -279,11 +344,15 @@
     const mainMenuContainer = document.querySelector('.menu-container');
     const optionsMenuContainer = document.getElementById('optionsMenu');
     const levelsContainer = document.getElementById('levelsContainer');
+    const howToPlayMenu = document.getElementById('howToPlayMenu');
 
     const playBtn = document.getElementById('playButton');
     const optionsBtn = document.getElementById('optionsButton');
-    const creditsBtn = document.getElementById('creditsButton');
     const backToMainBtn = document.getElementById('backToMainBtn');
+    const howToPlayButton = document.getElementById('howToPlayButton');
+    const sourceCodeButton = document.getElementById('sourceCodeButton');
+    const demoButton = document.getElementById('demoButton');
+    const backFromHowToPlayBtn = document.getElementById('backFromHowToPlayBtn');
 
     let settings = {
         keybinds: {
@@ -299,13 +368,22 @@
         mainMenuContainer.style.display = 'flex';
         optionsMenuContainer.style.display = 'none';
         levelsContainer.style.display = 'none';
+        howToPlayMenu.style.display = 'none';
     }
 
     function showOptionsMenu() {
         mainMenuContainer.style.display = 'none';
         optionsMenuContainer.style.display = 'flex';
         levelsContainer.style.display = 'none';
+        howToPlayMenu.style.display = 'none';
         updateDisplay();
+    }
+
+    function showHowToPlayMenu() {
+        mainMenuContainer.style.display = 'none';
+        optionsMenuContainer.style.display = 'none';
+        levelsContainer.style.display = 'none';
+        howToPlayMenu.style.display = 'flex';
     }
 
     async function loadLevelsMenu() {
@@ -327,6 +405,7 @@
                 mainMenuContainer.style.display = 'none'; 
                 optionsMenuContainer.style.display = 'none'; 
                 levelsContainer.style.display = 'flex';
+                howToPlayMenu.style.display = 'none';
 
                 setupLevelSelectionButtons();
             } else {
@@ -387,10 +466,31 @@
       });
     }
 
-    if (creditsBtn) {
-        creditsBtn.addEventListener('click', () => {
+    if (howToPlayButton) {
+        howToPlayButton.addEventListener('click', () => {
             playMenuClickSound();
-            alert('Créditos ainda não implementados.');
+            showHowToPlayMenu();
+        });
+    }
+
+    if (backFromHowToPlayBtn) {
+        backFromHowToPlayBtn.addEventListener('click', () => {
+            playMenuClickSound();
+            showMainMenu();
+        });
+    }
+
+    if (sourceCodeButton) {
+        sourceCodeButton.addEventListener('click', () => {
+            playMenuClickSound();
+            window.open('https://github.com/seu-usuario/threejs-3d-fps-platformer', '_blank');
+        });
+    }
+
+    if (demoButton) {
+        demoButton.addEventListener('click', () => {
+            playMenuClickSound();
+            alert('Vídeo de demonstração ainda não disponível.');
         });
     }
 
@@ -415,6 +515,14 @@
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             if (optionsMenuContainer.style.display === 'flex') {
+                event.preventDefault();
+                playMenuClickSound();
+                showMainMenu();
+            } else if (howToPlayMenu.style.display === 'flex') {
+                event.preventDefault();
+                playMenuClickSound();
+                showMainMenu();
+            } else if (levelsContainer.style.display === 'flex') {
                 event.preventDefault();
                 playMenuClickSound();
                 showMainMenu();

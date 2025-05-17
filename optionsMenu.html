@@ -8,75 +8,97 @@
     background: rgba(0, 0, 0, 0.5); /* Same overlay as pause menu */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    z-index: 1001; /* Slightly higher z-index than pause menu if needed */
+    z-index: 1001; 
     justify-content: center;
     align-items: center;
     flex-direction: column;
     font-family: sans-serif;
-    overflow-x: hidden; /* Added to prevent horizontal scroll */
-    overflow-y: hidden; /* **novo**: oculta scroll vertical */
+    overflow-x: hidden; 
+    overflow-y: hidden; 
 ">
     <div style="
         background: rgba(30, 30, 30, 0.85);
-        padding: 30px 50px; /* Slightly reduced padding */
+        padding: 25px 40px; /* Ajustado o padding */
         border-radius: 15px;
         display: flex;
         flex-direction: column;
-        gap: 20px; /* Reduced gap */
+        gap: 15px; /* Ajustado o gap */
         align-items: center;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         color: #ffffff;
-        min-width: 400px; /* Adjusted width */
-        max-height: 90vh; /* Limit height */
-        overflow-y: hidden; /* **modificado**: antes era auto */
+        min-width: 480px; /* Aumentado para acomodar melhor as abas */
+        max-width: 600px;
+        max-height: 90vh; 
+        overflow-y: auto; /* Alterado para auto para permitir scroll se o conteúdo for maior */
     ">
         <h2 style="
             color: #ffffff;
-            margin: 0 0 15px 0; /* Adjusted margin */
+            margin: 0 0 10px 0; 
             font-size: 2em;
             font-weight: 300;
             letter-spacing: 1px;
-        ">Controles</h2>
+        ">Opções</h2>
 
-        <!-- Keybindings Section -->
-        <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
-            <legend style="padding: 0 10px; color: #ccc;">Atalhos de Teclado (Movimento)</legend>
-            <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
-                <label for="keybindForward">Frente:</label>
-                <button class="fixed-keybind-display" id="keybindForward" data-action="forward">W</button>
+        <div class="options-tabs">
+            <button id="optionsControlsTabButton" class="active-tab">Controlos</button>
+            <button id="optionsGraphicsTabButton">Gráficos</button>
+        </div>
 
-                <label for="keybindBackward">Trás:</label>
-                <button class="fixed-keybind-display" id="keybindBackward" data-action="backward">S</button>
+        <!-- Conteúdo dos Controlos -->
+        <div id="optionsControlsSettings" class="options-content">
+            <h3 style="font-size: 1.5em; font-weight: 300; margin-top: 0; margin-bottom:15px; text-align:center; color: #eee;">Atalhos de Teclado</h3>
+            <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+                <legend style="padding: 0 10px; color: #ccc;">Movimento</legend>
+                <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
+                    <label for="keybindForward">Frente:</label>
+                    <button class="fixed-keybind-display" id="keybindForward" data-action="forward">W</button>
 
-                <label for="keybindLeft">Esquerda:</label>
-                <button class="fixed-keybind-display" id="keybindLeft" data-action="left">A</button>
+                    <label for="keybindBackward">Trás:</label>
+                    <button class="fixed-keybind-display" id="keybindBackward" data-action="backward">S</button>
 
-                <label for="keybindRight">Direita:</label>
-                <button class="fixed-keybind-display" id="keybindRight" data-action="right">D</button>
+                    <label for="keybindLeft">Esquerda:</label>
+                    <button class="fixed-keybind-display" id="keybindLeft" data-action="left">A</button>
 
-                <label for="keybindJump">Saltar:</label>
-                <button class="fixed-keybind-display" id="keybindJump" data-action="jump">Space</button>
-            </div>
-        </fieldset>
+                    <label for="keybindRight">Direita:</label>
+                    <button class="fixed-keybind-display" id="keybindRight" data-action="right">D</button>
 
-        <!-- Development Controls Section -->
-        <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
-            <legend style="padding: 0 10px; color: #ccc;">Controles de Desenvolvimento</legend>
-            <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
-                <label>UI:</label>
-                <button class="fixed-keybind-display">1</button>
+                    <label for="keybindJump">Saltar:</label>
+                    <button class="fixed-keybind-display" id="keybindJump" data-action="jump">Space</button>
+                </div>
+            </fieldset>
 
-                <label>Noclip:</label>
-                <button class="fixed-keybind-display">2</button>
+            <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box; margin-top: 15px;">
+                <legend style="padding: 0 10px; color: #ccc;">Desenvolvimento</legend>
+                <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
+                    <label>UI:</label>
+                    <button class="fixed-keybind-display">1</button>
 
-                <label>Checkpoints:</label>
-                <button class="fixed-keybind-display">3</button>
-            </div>
-        </fieldset>
+                    <label>Noclip:</label>
+                    <button class="fixed-keybind-display">2</button>
+
+                    <label>Checkpoints:</label>
+                    <button class="fixed-keybind-display">3</button>
+                </div>
+            </fieldset>
+        </div>
+
+        <!-- Conteúdo dos Gráficos -->
+        <div id="optionsGraphicsSettings" class="options-content" style="display: none;">
+            <h3 style="font-size: 1.5em; font-weight: 300; margin-top: 0; margin-bottom:15px; text-align:center; color: #eee;">Qualidade Visual</h3>
+            <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
+                <legend style="padding: 0 10px; color: #ccc;">Renderização</legend>
+                <div style="width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 10px 15px; align-items: center; font-size: 0.95em;">
+                    <label for="antialiasToggleButton">Antialiasing:</label>
+                    <button class="keybind-button" id="antialiasToggleButton">Desligado</button> <!-- Usando a classe keybind-button para estilo similar -->
+                    <p class="options-note" style="grid-column: span 2; font-size: 0.8em; color: #aaa; margin-top: 5px; text-align: center;">Requer reinício do nível para aplicar.</p>
+                </div>
+            </fieldset>
+            <!-- Outras opções gráficas podem ser adicionadas aqui -->
+        </div>
 
         <button id="backToPauseBtn" style="
-            background: rgba(100, 100, 100, 0.2); /* Neutral color */
+            background: rgba(100, 100, 100, 0.2); 
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
             padding: 12px 25px;
@@ -86,7 +108,7 @@
             transition: background-color 0.3s ease, border-color 0.3s ease;
             width: 200px;
             text-align: center;
-            margin-top: 15px; /* Adjusted margin */
+            margin-top: 15px; 
         ">Voltar</button>
     </div>
     <style>
@@ -94,8 +116,7 @@
              background-color: rgba(150, 150, 150, 0.3) !important;
              border-color: rgba(255, 255, 255, 0.8) !important;
         }
-        /* Keybind Button Styling (Rebindable) - Modificado para fixed-keybind-display */
-        #optionsMenu .keybind-button { /* Estilo original mantido caso seja usado em outro lugar, mas não para movimento */
+        #optionsMenu .keybind-button { 
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.4);
             color: #ffffff;
@@ -106,7 +127,15 @@
             min-width: 60px; 
             width: 100%; 
             box-sizing: border-box; 
+            cursor: pointer; /* Adicionado cursor pointer */
+            transition: background-color 0.2s ease, border-color 0.2s ease; /* Adicionada transição */
         }
+        /* Adicionado hover para keybind-button genérico */
+        #optionsMenu .keybind-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
 
          #optionsMenu .fixed-keybind-display {
             background: rgba(255, 255, 255, 0.1); 
@@ -123,7 +152,7 @@
          }
 
          #optionsMenu fieldset {
-             margin-bottom: 10px; /* Space between sections */
+             margin-bottom: 10px; 
          }
          #optionsMenu legend {
              font-size: 0.8em;
@@ -132,56 +161,62 @@
              letter-spacing: 0.5px;
          }
          #optionsMenu label {
-             justify-self: end; /* Align labels to the right in the grid */
+             justify-self: end; 
          }
-    </style>
-     <script>
-        // Corrige o caminho se optionsMenu.html estiver na raiz
-        const menuClickSound = new Audio('assets/sounds/menu_click.wav'); 
 
-        function playClick() {
-            if (!menuClickSound.paused) {
-                menuClickSound.currentTime = 0;
-            }
-            menuClickSound.play().catch(e => console.error("Audio Error:", e));
+        /* Estilos para as Abas de Opções */
+        .options-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
         }
 
-        // --- Get Elements ---
-        const movementKeyDisplayButtons = document.querySelectorAll('#optionsMenu fieldset:first-of-type .fixed-keybind-display[data-action]'); // Alterado para selecionar os botões de exibição de movimento
-        const backButton = document.getElementById('backToPauseBtn'); 
-
-        // --- Default Settings ---
-        let settings = {
-            keybinds: {
-                forward: 'W',
-                backward: 'S',
-                left: 'A',
-                right: 'D',
-                jump: 'Space'
-            }
-            // Futuramente, outras configurações podem vir aqui (sensibilidade do mouse, volume, etc.)
-            // e ser carregadas/salvas via localStorage
-        };
-
-        // --- Initialize Displayed Values ---
-        function updateDisplay() {
-            movementKeyDisplayButtons.forEach(button => {
-                const action = button.dataset.action;
-                if (action && settings.keybinds[action]) {
-                    button.textContent = settings.keybinds[action] === ' ' ? 'Space' : settings.keybinds[action].toUpperCase();
-                }
-            });
+        .options-tabs button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #cccccc;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+            border-radius: 0;
+            flex-grow: 1;
+            text-align: center;
         }
 
-        // Adiciona som ao botão Voltar
-        if (backButton) {
-             backButton.addEventListener('click', () => {
-                 playClick();
-                 // A lógica de voltar (showPauseMenu ou similar) deve estar no script que chama este menu (ex: pauseMenu.js ou main.js)
-             });
+        .options-tabs button:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .options-tabs button:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-left: none;
         }
         
-        // Inicializa a exibição das teclas
-        updateDisplay();
-     </script>
+        .options-tabs button.active-tab {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .options-tabs button:not(.active-tab):hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .options-content {
+            width: 100%;
+        }
+        .options-note { /* Já definido no HTML, mas pode ser centralizado aqui se necessário */
+            font-size: 0.8em;
+            color: #aaa;
+            margin-top: 5px;
+            text-align: center;
+            grid-column: span 2;
+        }
+
+    </style>
 </div>

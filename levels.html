@@ -12,9 +12,13 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: linear-gradient(to bottom, #2c3e50, #4ca1af); /* Mesmo fundo gradiente */
+      background: rgba(0, 0, 0, 0.5); /* Novo fundo como no pauseMenu */
+      backdrop-filter: blur(5px); /* Efeito de blur como no pauseMenu */
+      -webkit-backdrop-filter: blur(5px); /* Suporte Safari para blur */
       margin: 0;
       font-family: sans-serif;
+      color: #ffffff; /* Adicionado para garantir que o texto padrão seja branco */
+      overflow: hidden; /* Prevenir scrollbars indesejadas */
     }
 
     /* Estilos para os botões no hover */
@@ -31,20 +35,20 @@
 </head>
 <body>
   <div class="menu-container" style="
-    background: rgba(30, 30, 30, 0.85); /* Fundo escuro semi-transparente */
+    background: rgba(30, 30, 30, 0); /* Fundo da caixa transparente como no pauseMenu */
     padding: 40px 60px;
     border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 30px; /* Espaço entre título e botões */
+    gap: 25px; /* Gap como no pauseMenu */
     align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Borda branca subtil */
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Sombra suave */
+    border: 1px solid rgba(255, 255, 255, 0); /* Borda transparente como no pauseMenu */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); /* Sombra transparente como no pauseMenu */
     color: #ffffff; /* Cor do texto padrão para branco */
   ">
     <h1 style="
         margin: 0 0 10px 0;
-        font-size: 2.5em;
+        font-size: 2.5em; /* Pode ajustar para 2em se quiser exatamente como o "Pausa" */
         font-weight: 300;
         letter-spacing: 1px;
         color: #ffffff;
