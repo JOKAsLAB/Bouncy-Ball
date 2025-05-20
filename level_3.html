@@ -5,6 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEVEL 3</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #levelCompleteMenu {
+            display: none; /* Começa escondido */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #levelCompleteMenu .menu-content {
+            background-color: #33333300;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #55555500;
+        }
+
+        #levelCompleteMenu h2 {
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+
+        #finalTimeDisplay, #bestTimeDisplay {
+            font-size: 1.3em;
+            color: #fff;
+            padding: 5px 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        #finalTimeDisplay {
+            color: #FFD700; /* Dourado para o tempo final */
+            font-weight: bold;
+        }
+
+        #bestTimeDisplay {
+            font-size: 1.1em;
+            color: #ccc; /* Cinza claro para o melhor tempo normal */
+        }
+
+        #bestTimeDisplay.new-record {
+            color: gold !important; /* Dourado e negrito para novo recorde */
+            font-weight: bold;
+            animation: newRecordAnimation 1s infinite;
+        }
+
+        @keyframes newRecordAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #levelCompleteMenu .menu-buttons {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #levelCompleteMenu .menu-buttons button {
+            width: 200px;
+            padding: 10px;
+            font-size: 1em;
+            /* Estilos de botão podem vir de style.css ou serem definidos aqui/inline */
+        }
+    </style>
 </head>
 <body>
     <!-- Timer Display (Top Center) -->
@@ -40,14 +116,14 @@
 
     <!-- Level Complete Menu -->
     <div id="levelCompleteMenu">
-        <div>
+        <div class="menu-content">
             <h2>Level 3 Complete!</h2>
-            <div id="finalTimeDisplay">
-                Time: --:--:---
+            <div id="finalTimeDisplay">Time: --:--:---</div>
+            <div id="bestTimeDisplay">Melhor Tempo: --:--:---</div>
+            <div class="menu-buttons">
+                <button id="restartLevelBtn" class="menu-button">Restart Level</button>
+                <button id="mainMenuBtn" class="menu-button">Main Menu</button>
             </div>
-            <button id="nextLevelBtn">Next Level</button>
-            <button id="restartLevelBtn">Restart Level</button>
-            <button id="mainMenuBtn">Main Menu</button>
         </div>
     </div>
 
@@ -99,8 +175,46 @@
             await import('./main.js');
 
             // liga som a todos os botões
-            const { bindMenuSounds } = await import('./utils/menuSoundSetup.js');
-            bindMenuSounds(); 
+            // Tenta importar playMenuClickSound junto com bindMenuSounds.
+            // Certifique-se de que playMenuClickSound é exportado de menuSoundSetup.js
+            let playMenuClickSoundFunction = () => {}; // Função vazia por defeito
+            try {
+                const menuSoundModule = await import('./utils/menuSoundSetup.js');
+                menuSoundModule.bindMenuSounds(); 
+                if (menuSoundModule.playMenuClickSound && typeof menuSoundModule.playMenuClickSound === 'function') {
+                    playMenuClickSoundFunction = menuSoundModule.playMenuClickSound;
+                } else {
+                    console.warn('playMenuClickSound não foi encontrada ou não é uma função em menuSoundSetup.js');
+                }
+            } catch (e) {
+                console.error("Erro ao carregar menuSoundSetup.js:", e);
+            }
+
+
+            // A LÓGICA PARA 'nextLevelBtn' FOI REMOVIDA DESTA SECÇÃO
+            // PORQUE O BOTÃO FOI REMOVIDO DO HTML DESTE FICHEIRO (level_3.html).
+            // OS EVENT HANDLERS PARA OS BOTÕES DO MENU DE CONCLUSÃO SÃO GERIDOS
+            // EM main.js DENTRO DA FUNÇÃO handleLevelComplete.
+
+            // Adicionar event listeners para os botões do menu de conclusão do Nível 3
+            // Isto é adicionado aqui para garantir que funcionam,
+            // caso main.js não os esteja a gerir corretamente para este nível.
+            const restartBtn = document.getElementById('restartLevelBtn');
+            const menuBtn = document.getElementById('mainMenuBtn');
+
+            if (restartBtn) {
+                restartBtn.onclick = () => {
+                    playMenuClickSoundFunction();
+                    window.location.href = 'level_3.html'; // Recarrega o nível atual
+                };
+            }
+
+            if (menuBtn) {
+                menuBtn.onclick = () => {
+                    playMenuClickSoundFunction();
+                    window.location.href = 'index.html'; // Volta ao menu principal
+                };
+            }
         }
         loadMenusAndStartGame();
     </script>

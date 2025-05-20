@@ -3,8 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEVEL 1</title>
+    <title>Bouncy Ball - Nível 1</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #levelCompleteMenu {
+            display: none; /* Começa escondido */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #levelCompleteMenu .menu-content {
+            background-color: #33333300; /* Transparente como em level_2.html */
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #55555500; /* Transparente como em level_2.html */
+        }
+
+        #levelCompleteMenu h2 {
+            margin-bottom: 15px;
+            font-size: 2em; /* Igual ao level_2.html */
+        }
+
+        #finalTimeDisplay, #bestTimeDisplay {
+            font-size: 1.3em;
+            color: #fff;
+            padding: 5px 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        #finalTimeDisplay {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        #bestTimeDisplay {
+            font-size: 1.1em;
+            color: #ccc;
+        }
+
+        #bestTimeDisplay.new-record {
+            color: gold !important;
+            font-weight: bold;
+            animation: newRecordAnimation 1s infinite; /* Adicionada animação */
+        }
+
+        @keyframes newRecordAnimation { /* Adicionado keyframes */
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #levelCompleteMenu .menu-buttons {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #levelCompleteMenu .menu-buttons button {
+            width: 200px;
+            padding: 10px; /* Igual ao level_2.html */
+            font-size: 1em; /* Igual ao level_2.html */
+        }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+            "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js",
+            "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <!-- Timer Display (Top Center) -->
@@ -40,29 +124,20 @@
 
     <!-- Level Complete Menu -->
     <div id="levelCompleteMenu">
-        <div>
-            <h2>Level 1 Complete!</h2>
-            <div id="finalTimeDisplay">
-                Time: --:--:---
+        <div class="menu-content">
+            <h2>Nível 1 Completo!</h2>
+            <div id="finalTimeDisplay">Time: --:--:---</div>
+            <div id="bestTimeDisplay">Melhor Tempo: --:--:---</div>
+            <div class="menu-buttons">
+                <button id="nextLevelBtn" class="menu-button">Próximo Nível</button>
+                <button id="restartLevelBtn" class="menu-button">Reiniciar</button>
+                <button id="mainMenuBtn" class="menu-button">Menu Principal</button>
             </div>
-            <button id="nextLevelBtn">Next Level</button>
-            <button id="restartLevelBtn">Restart Level</button>
-            <button id="mainMenuBtn">Main Menu</button>
         </div>
     </div>
 
     <div id="pauseMenuContainer"></div>
     <div id="optionsMenuContainer"></div>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/",
-                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
-            }
-        }
-    </script>
 
     <script type="module">
         // Importa a função de inicialização da lógica do menu de opções

@@ -5,6 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LEVEL 2</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos para o menu de nível completo - semelhantes ao level_1.html */
+        #levelCompleteMenu { /* Adicionado para corresponder ao level_1 e permitir display:none inicial */
+            display: none; /* Começa escondido */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #levelCompleteMenu .menu-content {
+            background-color: #33333300;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #55555500;
+        }
+
+        #levelCompleteMenu h2 {
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+
+        #finalTimeDisplay, #bestTimeDisplay {
+            font-size: 1.3em;
+            color: #fff;
+            padding: 5px 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        #finalTimeDisplay {
+            color: #FFD700; /* Dourado para o tempo final */
+            font-weight: bold;
+        }
+
+        #bestTimeDisplay {
+            font-size: 1.1em;
+            color: #ccc; /* Cinza claro para o melhor tempo normal */
+        }
+
+        #bestTimeDisplay.new-record {
+            color: gold !important; /* Dourado e negrito para novo recorde */
+            font-weight: bold;
+            animation: newRecordAnimation 1s infinite;
+        }
+
+        @keyframes newRecordAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #levelCompleteMenu .menu-buttons {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #levelCompleteMenu .menu-buttons button {
+            width: 200px;
+            padding: 10px;
+            font-size: 1em;
+            /* Estilos de botão podem vir de style.css ou serem definidos aqui/inline */
+        }
+    </style>
 </head>
 <body>
     <!-- Timer Display (Top Center) -->
@@ -40,14 +117,15 @@
 
     <!-- Level Complete Menu -->
     <div id="levelCompleteMenu">
-        <div>
+        <div class="menu-content">
             <h2>Level 2 Complete!</h2>
-            <div id="finalTimeDisplay">
-                Time: --:--:---
+            <div id="finalTimeDisplay">Time: --:--:---</div>
+            <div id="bestTimeDisplay">Melhor Tempo: --:--:---</div>
+            <div class="menu-buttons">
+                <button id="nextLevelBtn" class="menu-button">Next Level</button>
+                <button id="restartLevelBtn" class="menu-button">Restart Level</button>
+                <button id="mainMenuBtn" class="menu-button">Main Menu</button>
             </div>
-            <button id="nextLevelBtn">Next Level</button>
-            <button id="restartLevelBtn">Restart Level</button>
-            <button id="mainMenuBtn">Main Menu</button>
         </div>
     </div>
 

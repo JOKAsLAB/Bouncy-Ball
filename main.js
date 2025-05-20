@@ -50,6 +50,7 @@ const fpsCounter = createFpsCounter(); // <-- ADICIONE ESTA LINHA
 // Elementos do DOM relacionados à UI
 const timerDisplayElement = document.getElementById('timerDisplay');
 const finalTimeDisplayElement = document.getElementById('finalTimeDisplay');
+const bestTimeDisplayElement = document.getElementById('bestTimeDisplay'); // Adicionar referência para o novo elemento
 const infoElement = document.getElementById('info'); // Obter referência ao elemento info
 const noclipIndicator = document.getElementById('noclipIndicator'); // Referência ao indicador de noclip
 const fpsElement = document.getElementById('fps'); // Cache this
@@ -139,12 +140,45 @@ function handleLevelComplete() {
         levelCompleteSound.play().catch(e => console.error("Error re-playing level complete sound:", e));
     }
 
-    const finalElapsedTime = timer.getElapsedTime();
+    const finalElapsedTime = timer.getElapsedTime(); // Tempo em milissegundos
     const finalTimeFormatted = timer.formatTime(finalElapsedTime);
 
     if (finalTimeDisplayElement) {
         finalTimeDisplayElement.textContent = `Time: ${finalTimeFormatted}`;
     }
+
+    // Lógica para Melhor Tempo (Best Time) - Generalizada
+    if (currentLevelPath && bestTimeDisplayElement) {
+        // Extrai o nome do nível do path (ex: "level_1", "level_2")
+        const levelNameMatch = currentLevelPath.match(/level_(\d+)\.html$/);
+        if (levelNameMatch && levelNameMatch[1]) {
+            const levelNumber = levelNameMatch[1];
+            const bestTimeKey = `level${levelNumber}BestTime`;
+
+            let bestTime = localStorage.getItem(bestTimeKey); // Tempo guardado está em milissegundos
+
+            bestTimeDisplayElement.classList.remove('new-record'); // Remove a classe de recorde por padrão
+            bestTimeDisplayElement.style.color = ''; // Reseta a cor inline, se houver
+            bestTimeDisplayElement.style.display = 'block'; // Garante que está visível
+
+            if (bestTime === null || finalElapsedTime < parseFloat(bestTime)) {
+                localStorage.setItem(bestTimeKey, finalElapsedTime.toString());
+                bestTime = finalElapsedTime.toString(); // Atualiza para o novo recorde
+                bestTimeDisplayElement.textContent = `Novo Recorde: ${timer.formatTime(parseFloat(bestTime))}`;
+                bestTimeDisplayElement.classList.add('new-record'); // Adiciona classe para estilo de novo recorde
+            } else {
+                bestTimeDisplayElement.textContent = `Melhor Tempo: ${timer.formatTime(parseFloat(bestTime))}`;
+            }
+        } else {
+            // Se não conseguir determinar o nome do nível, esconde o campo de melhor tempo
+            console.warn("Não foi possível determinar o nome do nível para o Melhor Tempo a partir de:", currentLevelPath);
+            bestTimeDisplayElement.style.display = 'none';
+        }
+    } else if (bestTimeDisplayElement) {
+        // Se currentLevelPath não estiver definido mas o elemento existir, esconde-o
+        bestTimeDisplayElement.style.display = 'none';
+    }
+
 
     if (timerDisplayElement) {
         timerDisplayElement.style.display = 'none';
