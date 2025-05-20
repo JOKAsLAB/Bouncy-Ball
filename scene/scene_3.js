@@ -55,7 +55,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         sizeAttenuation: true,
     });
     for (let i = 0; i < starCount; i++) {
-        const radius = THREE.MathUtils.randFloat(300, 600); 
+        const radius = THREE.MathUtils.randFloat(50, 190); // Ajustado para estar dentro de uma distância de visão de 200
         const theta = Math.random() * Math.PI * 2; 
         const phi = Math.acos((Math.random() * 2) - 1); 
         const x = radius * Math.sin(phi) * Math.cos(theta);
@@ -132,14 +132,14 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         displacementMap: normalTextureDisplacement,
         displacementScale: 0.01, 
         displacementBias: -0.005, 
-        coat: 1.0, 
-        coatRoughness: 0.05, 
-        coatNormalMap: normalTextureNormal, 
+        clearcoat: 1.0, // Renomeado de coat
+        clearcoatRoughness: 0.05, // Renomeado de coatRoughness
+        clearcoatNormalMap: normalTextureNormal, // Renomeado de coatNormalMap
     });
     if (!normalTextureColor) {
         platformMaterial.color = new THREE.Color(0x666666); 
         platformMaterial.roughness = 0.2;
-        platformMaterial.coatRoughness = 0.1;
+        platformMaterial.clearcoatRoughness = 0.1;
     }
 
     const checkpointPlatformTexturedMaterial = new THREE.MeshPhysicalMaterial({
@@ -152,9 +152,9 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         displacementMap: cpTextureDisplacement,
         displacementScale: 0.01,
         displacementBias: -0.005,
-        coat: 1.0,
-        coatRoughness: 0.2, 
-        coatNormalMap: cpTextureNormal,
+        clearcoat: 1.0, // Renomeado de coat
+        clearcoatRoughness: 0.2, // Renomeado de coatRoughness
+        clearcoatNormalMap: cpTextureNormal, // Renomeado de coatNormalMap
         emissive: new THREE.Color(0xffffff),
         emissiveIntensity: 0.2, 
         emissiveMap: cpTextureColor,
@@ -217,13 +217,11 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         const geometry = new THREE.BoxGeometry(...size);
         const platformSpecificMaterial = baseMaterialToUse.clone();
         
-        const platform = new THREE.Mesh(geometry, platformSpecificMaterial);
-
         const repeatScaleFactor = isCheckpointPlatform ? 5 : 3;
         const repeatFactorX = size[0] / repeatScaleFactor;
         const repeatFactorZ = size[2] / repeatScaleFactor;
 
-        const mapsToRepeat = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'displacementMap', 'emissiveMap', 'coatNormalMap'];
+        const mapsToRepeat = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'displacementMap', 'emissiveMap', 'clearcoatNormalMap']; // Atualizado coatNormalMap para clearcoatNormalMap
 
         for (const mapType of mapsToRepeat) {
             if (platformSpecificMaterial[mapType] && platformSpecificMaterial[mapType].isTexture) {
@@ -231,11 +229,13 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
                 platformSpecificMaterial[mapType].repeat.set(repeatFactorX, repeatFactorZ);
             }
         }
+        
+        const platformMesh = new THREE.Mesh(geometry, platformSpecificMaterial); // Definir a malha da plataforma
             
-        platform.position.set(...position);
-        platform.castShadow = true;
-        platform.receiveShadow = true;
-        scene.add(platform);
+        platformMesh.position.set(...position); // Usar platformMesh
+        platformMesh.castShadow = true; // Usar platformMesh
+        platformMesh.receiveShadow = true; // Usar platformMesh
+        scene.add(platformMesh); // Usar platformMesh
 
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
         const body = new CANNON.Body({ mass: 0, position: new CANNON.Vec3(...position), shape: shape, material: groundWallMaterial, collisionFilterGroup: GROUP_GROUND, collisionFilterMask: GROUP_PLAYER });
