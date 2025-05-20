@@ -689,3 +689,35 @@ function animate(now) {
 if (timerDisplayElement && finalTimeDisplayElement) {
     requestAnimationFrame(animate);
 }
+
+// Funções para controle de volume
+export function setMasterVolume(volume) {
+    if (camera && camera.userData.listener) {
+        camera.userData.listener.setMasterVolume(parseFloat(volume));
+        console.log(`[MainJS] Master Volume definido para: ${volume}`);
+    } else {
+        console.warn("[MainJS] AudioListener não encontrado para definir Master Volume.");
+    }
+}
+
+export function setMusicVolume(volume) {
+    if (currentLevelBackgroundSound) {
+        currentLevelBackgroundSound.setVolume(parseFloat(volume));
+        console.log(`[MainJS] Volume da Música do Nível definido para: ${volume}`);
+    } else {
+        console.warn("[MainJS] currentLevelBackgroundSound não encontrado para definir Volume da Música.");
+    }
+}
+
+export function setSfxVolume(volume) {
+    // Esta função ainda é um placeholder para SFX gerais do jogo.
+    // O som de clique do menu é tratado separadamente.
+    console.log(`[MainJS] Volume SFX (placeholder) definido para: ${volume}`);
+    // Exemplo: Se você tiver uma lista de todos os SFX do jogo:
+    // allGameSfx.forEach(sfx => sfx.setVolume(parseFloat(volume)));
+}
+
+// Opcional: Expor globalmente para o caso de optionsMenuLogic não conseguir importar como módulo
+window.setMasterVolumeFromMain = setMasterVolume;
+window.setMusicVolumeFromMain = setMusicVolume;
+window.setSfxVolumeFromMain = setSfxVolume;

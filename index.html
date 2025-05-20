@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu Inicial</title>
   <link rel="stylesheet" href="menu.css">
+  
+  <!-- Mapa de Importação (Import Map) -->
+  <script type="importmap">
+  {
+      "imports": {
+          "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+          "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js",
+          "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+      }
+  }
+  </script>
+
   <style>
     /* Estilos básicos para o corpo */
     body {
@@ -375,32 +387,61 @@
 
   <!-- Script para Música de Fundo -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const backgroundMusic = new Audio('assets/sound/Music_Menu.mp3');
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0.02;
+    let mainMenuBackgroundMusic; // Tornar acessível
 
-        const playPromise = backgroundMusic.play();
-
-        if (playPromise !== undefined) {
-            playPromise.then(_ => {
-                console.log("Música de fundo iniciada.");
-            }).catch(error => {
-                console.warn("Autoplay da música de fundo bloqueado. Tentando após interação do utilizador.", error);
-                const startMusicOnInteraction = () => {
-                    backgroundMusic.play().then(() => {
-                        console.log("Música de fundo iniciada após interação.");
-                    }).catch(e => {
-                        console.error("Erro ao tentar tocar música após interação:", e);
-                    });
-                    document.removeEventListener('click', startMusicOnInteraction);
-                    document.removeEventListener('keydown', startMusicOnInteraction);
-                };
-                document.addEventListener('click', startMusicOnInteraction, { once: true });
-                document.addEventListener('keydown', startMusicOnInteraction, { once: true });
-            });
+    // Função para definir o volume da música do menu principal
+    function setMainMenuMusicVolume() {
+        if (mainMenuBackgroundMusic) {
+            const masterVolume = parseFloat(localStorage.getItem('masterVolume') || '0.5');
+            const musicVolumeSetting = parseFloat(localStorage.getItem('musicVolume') || '0.05'); // Volume específico para música
+            mainMenuBackgroundMusic.volume = musicVolumeSetting * masterVolume;
+            console.log(`[IndexHTML] Volume da música do menu definido para: ${mainMenuBackgroundMusic.volume} (Master: ${masterVolume}, Music: ${musicVolumeSetting})`);
         }
+    }
+
+    // Função para iniciar a música do menu principal
+    function playMainMenuMusic() {
+        if (mainMenuBackgroundMusic && mainMenuBackgroundMusic.paused) {
+            const playPromise = mainMenuBackgroundMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    console.log("Música de fundo do menu iniciada/retomada.");
+                }).catch(error => {
+                    console.warn("Autoplay da música de fundo do menu bloqueado. Tentando após interação do utilizador.", error);
+                    const startMusicOnInteraction = () => {
+                        mainMenuBackgroundMusic.play().then(() => {
+                            console.log("Música de fundo do menu iniciada após interação.");
+                        }).catch(e => {
+                            console.error("Erro ao tentar tocar música do menu após interação:", e);
+                        });
+                        // Remover listeners após a primeira interação bem-sucedida ou tentativa
+                        document.removeEventListener('click', startMusicOnInteraction);
+                        document.removeEventListener('keydown', startMusicOnInteraction);
+                    };
+                    document.addEventListener('click', startMusicOnInteraction, { once: true });
+                    document.addEventListener('keydown', startMusicOnInteraction, { once: true });
+                });
+            }
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        mainMenuBackgroundMusic = new Audio('assets/sound/Music_Menu.mp3');
+        mainMenuBackgroundMusic.loop = true;
+        
+        setMainMenuMusicVolume(); // Define o volume inicial com base no localStorage
+        playMainMenuMusic(); // Tenta tocar a música
+
+        // Adicionar um listener para quando as opções de áudio são alteradas (opcional, mas bom para feedback imediato)
+        // Isto pode ser feito através de um evento customizado ou chamando setMainMenuMusicVolume()
+        // diretamente de optionsMenuLogic.js se estivermos no contexto do menu principal.
     });
+
+    // Expor globalmente para que optionsMenuLogic possa chamar, se necessário
+    window.applyMainMenuVolumeSettings = setMainMenuMusicVolume;
+    window.playMainMenuMusicIfNeeded = playMainMenuMusic;
+
   </script>
 </body>
 </html>

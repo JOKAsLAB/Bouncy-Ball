@@ -43,6 +43,7 @@
         <div class="options-tabs">
             <button id="optionsControlsTabButton" class="active-tab">Controlos</button>
             <button id="optionsGraphicsTabButton">Gráficos</button>
+            <button id="optionsAudioTabButton">Áudio</button> <!-- Nova Aba -->
         </div>
 
         <!-- Conteúdo dos Controlos -->
@@ -104,6 +105,25 @@
                 </div>
             </fieldset>
             <p id="graphicsRestartNote" class="options-note" style="display: none; text-align: center; width: 100%; margin-top: 10px;">Alterações gráficas requerem reinício do nível para aplicar.</p>
+        </div>
+
+        <!-- Conteúdo do Áudio (Novo) -->
+        <div id="optionsAudioSettings" class="options-content" style="display: none;">
+            <h3 style="font-size: 1.6em; font-weight: 400; margin-top: 5px; margin-bottom:20px; text-align:center; color: #f0f0f0;">Definições de Áudio</h3>
+            <fieldset>
+                <legend>Volumes</legend>
+                <div class="options-grid">
+                    <label for="masterVolumeSlider">Volume Geral:</label>
+                    <input type="range" id="masterVolumeSlider" min="0" max="1" step="0.01" value="0.5" style="width: 100%;">
+                    
+                    <label for="musicVolumeSlider">Volume Música:</label>
+                    <input type="range" id="musicVolumeSlider" min="0" max="1" step="0.01" value="0.05" style="width: 100%;">
+
+                    <label for="sfxVolumeSlider">Volume Efeitos:</label>
+                    <input type="range" id="sfxVolumeSlider" min="0" max="1" step="0.01" value="0.1" style="width: 100%;">
+                </div>
+            </fieldset>
+            <p id="audioRestartNote" class="options-note" style="display: none; text-align: center; width: 100%; margin-top: 10px;">Algumas alterações de áudio podem requerer o reinício do nível.</p>
         </div>
 
         <button id="backToPauseBtn" style="
