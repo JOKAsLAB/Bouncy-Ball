@@ -7,7 +7,9 @@ let audioInitialized = false;
 function initAudio() {
   if (audioInitialized) return;
   
-  clickSound = new Audio('./assets/sound/menu_click.mp3'); 
+  console.log('Inicializando sistema de áudio...');
+  // Corrija o caminho aqui: remova o '../'
+  clickSound = new Audio('./assets/sound/menu_click.mp3'); // Ou apenas 'assets/sound/menu_click.mp3'
   clickSound.preload = 'auto';
   audioInitialized = true;
 }
@@ -16,10 +18,11 @@ function initAudio() {
 document.addEventListener('click', initAudio, { once: true });
 
 export function playMenuClickSound() {
+  console.log('▶️ playMenuClickSound fired');
   if (!audioInitialized) initAudio();
   
   if (clickSound) {
     if (!clickSound.paused) clickSound.currentTime = 0;
-    clickSound.play().catch(err => {});
+    clickSound.play().catch(err => console.error('playSound error:', err));
   }
 }
