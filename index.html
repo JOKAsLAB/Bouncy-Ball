@@ -38,6 +38,36 @@
   </style>
 </head>
 <body>
+  <!-- Adicione este script no início do body -->
+  <script>
+    // Desabilitar completamente o pointer lock em todo o menu
+    document.addEventListener('DOMContentLoaded', function() {
+      // Forçar saída de qualquer pointer lock existente
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+
+      // Bloquear qualquer tentativa de usar pointer lock
+      const originalRequestPointerLock = Element.prototype.requestPointerLock;
+      Element.prototype.requestPointerLock = function() {
+        console.log('Pointer lock foi bloqueado no menu');
+        return; // Não faz nada, efetivamente desativando pointer lock
+      };
+
+      // Garantir que o cursor esteja sempre visível
+      const style = document.createElement('style');
+      style.innerHTML = `
+        * { cursor: auto !important; }
+        button, a, .menu-buttons button { cursor: pointer !important; }
+      `;
+      document.head.appendChild(style);
+      
+      // Aplicar cursor visível ao body e html
+      document.body.style.cursor = 'auto';
+      document.documentElement.style.cursor = 'auto';
+    });
+  </script>
+
   <div class="menu-container" style="
     background: rgba(30, 30, 30, 0); /* Fundo da caixa transparente como no pauseMenu */
     padding: 40px 60px;
