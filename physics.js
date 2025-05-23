@@ -4,13 +4,13 @@ const playerBody = new CANNON.Body({
     mass: 5,
     shape: new CANNON.Sphere(0.3),
     position: new CANNON.Vec3(0, 3, 0),
-    linearDamping: 0.2,  // Resistência ao movimento
+    linearDamping: 0.2,
     fixedRotation: true
 });
 
 export function setupPhysics() {
     const world = new CANNON.World();
-    world.gravity.set(0, -9.8, 0); // Use -20 para mais "peso", -9.82 é padrão
+    world.gravity.set(0, -9.8, 0);
     
     const playerMaterial = new CANNON.Material("player");
     const groundMaterial = new CANNON.Material("ground");
@@ -19,7 +19,7 @@ export function setupPhysics() {
         groundMaterial,
         playerMaterial,
         {
-            friction: 0.8, // Aumente para mais "grude"
+            friction: 0.8,
             restitution: 0.0
         }
     );
@@ -29,11 +29,11 @@ export function setupPhysics() {
     world.addBody(playerBody);
 
     const groundBody = new CANNON.Body({
-        mass: 0, // Chão deve ser estático
+        mass: 0,
         shape: new CANNON.Plane(),
         material: groundMaterial
     });
-    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0); // Rotaciona o plano para ser horizontal
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     groundBody.material = groundMaterial;
     world.addBody(groundBody);
 

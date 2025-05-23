@@ -6,9 +6,8 @@
     <title>LEVEL 2</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos para o menu de nível completo - semelhantes ao level_1.html */
-        #levelCompleteMenu { /* Adicionado para corresponder ao level_1 e permitir display:none inicial */
-            display: none; /* Começa escondido */
+        #levelCompleteMenu { 
+            display: none; 
             position: fixed;
             top: 0;
             left: 0;
@@ -47,17 +46,17 @@
         }
 
         #finalTimeDisplay {
-            color: #FFD700; /* Dourado para o tempo final */
+            color: #FFD700; 
             font-weight: bold;
         }
 
         #bestTimeDisplay {
             font-size: 1.1em;
-            color: #ccc; /* Cinza claro para o melhor tempo normal */
+            color: #ccc; 
         }
 
         #bestTimeDisplay.new-record {
-            color: gold !important; /* Dourado e negrito para novo recorde */
+            color: gold !important; 
             font-weight: bold;
             animation: newRecordAnimation 1s infinite;
         }
@@ -79,12 +78,12 @@
             width: 200px;
             padding: 10px;
             font-size: 1em;
-            /* Estilos de botão podem vir de style.css ou serem definidos aqui/inline */
+            
         }
     </style>
 </head>
 <body>
-    <!-- Timer Display (Top Center) -->
+    
     <div id="timerDisplay" style="
         position: fixed;
         top: 10px;
@@ -115,7 +114,7 @@
         </span>
     </div>
 
-    <!-- Level Complete Menu -->
+    
     <div id="levelCompleteMenu">
         <div class="menu-content">
             <h2>Level 2 Complete!</h2>
@@ -143,7 +142,7 @@
     </script>
 
     <script type="module">
-        // Importa a função de inicialização da lógica do menu de opções
+        
         import { initializeOptionsMenuLogic } from './utils/optionsMenuLogic.js'; 
 
         async function loadMenusAndStartGame() {
@@ -154,29 +153,27 @@
             document.getElementById('pauseMenuContainer').innerHTML = pauseHtml;
             document.getElementById('optionsMenuContainer').innerHTML = optionsHtml;
 
-            // Inicializa a lógica do menu de opções DEPOIS que o HTML foi injetado
+            
             initializeOptionsMenuLogic('optionsMenu', () => {
-                // Esta é a função de callback para o botão "Voltar" do menu de opções.
-                // Ela será chamada quando o botão "Voltar" no menu de opções for clicado.
-                console.log("Botão 'Voltar' do menu de opções clicado.");
+                
                 
                 const optionsMenuNode = document.getElementById('optionsMenu');
                 if (optionsMenuNode) {
-                    optionsMenuNode.style.display = 'none'; // Esconde o menu de opções
+                    optionsMenuNode.style.display = 'none'; 
                 }
                 
-                // AQUI: Adicione a lógica para mostrar o menu de pausa novamente, se aplicável
-                const pauseMenuNode = document.getElementById('pauseMenu'); // Assumindo que o pauseMenu.html tem um div raiz com id="pauseMenu"
+                
+                const pauseMenuNode = document.getElementById('pauseMenu'); 
                 if (pauseMenuNode) {
-                    // pauseMenuNode.style.display = 'flex'; // ou 'block', ou chame uma função showPauseMenu()
-                    console.log("Deveria mostrar o menu de pausa agora.");
+                    
+                    
                 }
             });
 
-            // importa e executa o jogo
+            
             await import('./main.js');
 
-            // liga som a todos os botões
+            
             const { bindMenuSounds } = await import('./utils/menuSoundSetup.js');
             bindMenuSounds(); 
         }

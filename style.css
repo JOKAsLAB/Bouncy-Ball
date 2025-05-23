@@ -21,78 +21,73 @@ canvas
     pointer-events: none;
 }
 
-/* Level Complete Menu - Style based on pauseMenu/index.html */
 #levelCompleteMenu {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Overlay background */
-    backdrop-filter: blur(5px); /* Blur effect */
-    -webkit-backdrop-filter: blur(5px); /* Safari support */
-    display: none; /* Initially hidden - controlled by JS */
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(5px); 
+    -webkit-backdrop-filter: blur(5px); 
+    display: none; 
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    font-family: sans-serif; /* Match font */
+    font-family: sans-serif; 
     color: white;
 }
 
-/* Inner container for the menu box */
 #levelCompleteMenu > div {
-    background: rgba(30, 30, 30, 0); /* Dark semi-transparent background */
-    padding: 40px 60px; /* Padding like pause menu */
-    border-radius: 15px; /* Rounded corners like pause menu */
+    background: rgba(30, 30, 30, 0); 
+    padding: 40px 60px; 
+    border-radius: 15px; 
     display: flex;
     flex-direction: column;
-    gap: 25px; /* Gap like pause menu */
-    align-items: center; /* Center items horizontally */
-    border: 1px solid rgba(255, 255, 255, 0); /* Subtle white border */
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); /* Soft shadow */
+    gap: 25px; 
+    align-items: center; 
+    border: 1px solid rgba(255, 255, 255, 0); 
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); 
     color: #ffffff;
-    min-width: 300px; /* Ensure a minimum width */
+    min-width: 300px; 
 }
 
 
 #levelCompleteMenu h2 {
     color: #ffffff;
-    margin: 0 0 10px 0; /* Adjusted margin */
-    font-size: 2em; /* Match pause menu title size */
-    font-weight: 300; /* Lighter font weight */
-    letter-spacing: 1px; /* Match pause menu title spacing */
+    margin: 0 0 10px 0; 
+    font-size: 2em; 
+    font-weight: 300; 
+    letter-spacing: 1px; 
 }
 
 #finalTimeDisplay {
-    font-size: 1.3em; /* Adjust size as needed */
-    color: #FFD700; /* Gold color for time (or #ffc107) */
-    margin-bottom: 5px; /* Adjust spacing */
+    font-size: 1.3em; 
+    color: #FFD700; 
+    margin-bottom: 5px; 
 }
 
-/* Style buttons like pauseMenu/index.html */
 #levelCompleteMenu button {
-    background: rgba(255, 255, 255, 0.1); /* Transparent background */
-    border: 1px solid rgba(255, 255, 255, 0.5); /* White border */
+    background: rgba(255, 255, 255, 0.1); 
+    border: 1px solid rgba(255, 255, 255, 0.5); 
     color: #ffffff;
-    padding: 12px 25px; /* Padding like pause menu buttons */
-    border-radius: 8px; /* Rounded corners like pause menu buttons */
+    padding: 12px 25px; 
+    border-radius: 8px; 
     cursor: pointer;
-    font-size: 1em; /* Match pause menu button font size */
-    transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition */
-    width: 220px; /* Fixed width like index buttons */
+    font-size: 1em; 
+    transition: background-color 0.3s ease, border-color 0.3s ease; 
+    width: 220px; 
     text-align: center;
-    text-transform: uppercase; /* Optional: make text uppercase */
-    font-weight: normal; /* Adjust font weight if needed */
+    text-transform: uppercase; 
+    font-weight: normal; 
 }
 
-/* Hover effect for buttons */
 #levelCompleteMenu button:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important; /* Slightly more opaque */
-    border-color: rgba(255, 255, 255, 0.8) !important; /* Brighter border */
+    background-color: rgba(255, 255, 255, 0.2) !important; 
+    border-color: rgba(255, 255, 255, 0.8) !important; 
 }
 
-/* Optional: Active effect for buttons */
 #levelCompleteMenu button:active {
-    background-color: rgba(255, 255, 255, 0.05) !important; /* Slightly darker */
-    transform: scale(0.98); /* Click feedback */
+    background-color: rgba(255, 255, 255, 0.05) !important; 
+    transform: scale(0.98); 
 }

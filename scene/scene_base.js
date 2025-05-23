@@ -5,10 +5,9 @@ export function createBaseScene(hdriFilename, environmentIntensity = 0.8) {
     return new Promise((resolve, reject) => {
         const scene = new THREE.Scene();
 
-        // Função para adicionar luzes, para evitar duplicação de código
         const addLights = () => {
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            directionalLight.name = "BaseDirectionalLight"; // Nomear a luz
+            directionalLight.name = "BaseDirectionalLight"; 
             directionalLight.position.set(10, 20, 10);
             directionalLight.castShadow = true;
 
@@ -22,14 +21,6 @@ export function createBaseScene(hdriFilename, environmentIntensity = 0.8) {
             directionalLight.shadow.camera.bottom = -20;
 
             scene.add(directionalLight);
-            
-            // Poderia adicionar uma AmbientLight básica aqui se o HDRI não for carregado,
-            // mas as cenas individuais podem querer controlar isso.
-            // Ex: if (!hdriFilename) {
-            //    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-            //    ambientLight.name = "BaseAmbientLight"; // Adiciona um nome para identificação
-            //    scene.add(ambientLight);
-            // }
         };
 
         if (hdriFilename && typeof hdriFilename === 'string' && hdriFilename.trim() !== '') {
@@ -42,22 +33,14 @@ export function createBaseScene(hdriFilename, environmentIntensity = 0.8) {
                 scene.environment = texture;
                 scene.environmentIntensity = environmentIntensity;
 
-                console.log(`HDRI '${hdriFilename}' carregado e aplicado na cena base.`);
-                
-                addLights(); // Adiciona luzes após o HDRI estar pronto
+                addLights(); 
                 resolve(scene);
 
             }, undefined, function (error) {
-                console.error(`Erro ao carregar o HDRI '${hdriFilename}' na cena base:`, error);
-                // Mesmo com erro no HDRI, podemos querer uma cena com luzes
-                // addLights(); 
-                // resolve(scene); // Ou rejeitar completamente
-                reject(error); // Mantendo o comportamento original de rejeitar em erro de HDRI
+                reject(error); 
             });
         } else {
-            // Nenhum HDRI fornecido, configurar uma cena sem ele
-            console.log("Nenhum HDRI especificado, criando cena base sem ambiente HDRI.");
-            scene.background = new THREE.Color(0xcccccc); // Um fundo padrão, ou deixar para a cena individual
+            scene.background = new THREE.Color(0xcccccc); 
             addLights();
             resolve(scene);
         }
@@ -65,18 +48,14 @@ export function createBaseScene(hdriFilename, environmentIntensity = 0.8) {
 }
 
 export async function createScene(world, checkpointManager, groundWallMaterial, camera) { 
-    const scene = await createBaseScene(null); // Não carrega HDRI
+    const scene = await createBaseScene(null); 
 
-    scene.background = new THREE.Color(0x000000); // Define o fundo preto
-    // scene.environmentIntensity e scene.environment já não serão definidos pelo HDRI
+    scene.background = new THREE.Color(0x000000); 
     
-    // Remover luzes padrão se createBaseScene(null) ainda as adicionar e você não as quiser
     scene.traverse((object) => {
-        if (object instanceof THREE.DirectionalLight && object.name === "BaseDirectionalLight") { // Adicionar um nome à luz em scene_base para identificação
-            // scene.remove(object); // ou object.visible = false;
+        if (object instanceof THREE.DirectionalLight && object.name === "BaseDirectionalLight") { 
         }
         if (object instanceof THREE.AmbientLight && object.name === "BaseAmbientLight") {
-            // scene.remove(object);
         }
     });
 }

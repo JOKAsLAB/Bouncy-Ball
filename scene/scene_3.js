@@ -19,7 +19,6 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         }
     });
 
-    // --- Áudio de Fundo para Nível 3 ---
     let backgroundSound;
     let audioListener; 
     if (camera) {
@@ -38,15 +37,10 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             if (!backgroundSound.isPlaying) {
                 backgroundSound.play();
             }
-            console.log("Música de fundo do nível 3 carregada.");
         } catch (error) {
-            console.error("Erro ao carregar música de fundo do nível 3:", error);
         }
-    } else {
-        console.warn("Câmera não fornecida para createScene (nível 3), áudio de fundo não será inicializado.");
     }
     
-    // --- Adicionar Estrelas ---
     const starCount = 200;
     const starVertices = [];
     const starMaterial = new THREE.PointsMaterial({
@@ -55,7 +49,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         sizeAttenuation: true,
     });
     for (let i = 0; i < starCount; i++) {
-        const radius = THREE.MathUtils.randFloat(50, 190); // Ajustado para estar dentro de uma distância de visão de 200
+        const radius = THREE.MathUtils.randFloat(50, 190); 
         const theta = Math.random() * Math.PI * 2; 
         const phi = Math.acos((Math.random() * 2) - 1); 
         const x = radius * Math.sin(phi) * Math.cos(theta);
@@ -75,7 +69,6 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
 
     const textureLoader = new THREE.TextureLoader();
 
-    // --- Carregar Texturas PBR para Plataformas de Checkpoint (Metal034) ---
     let cpTextureColor = null;
     let cpTextureNormal = null;
     let cpTextureRoughness = null;
@@ -95,10 +88,8 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         cpTextureDisplacement = await textureLoader.loadAsync(`${checkpointTexturePath}Metal034_1K-JPG_Displacement.jpg`);
         cpTextureDisplacement.wrapS = THREE.RepeatWrapping; cpTextureDisplacement.wrapT = THREE.RepeatWrapping;
     } catch (error) {
-        console.error("Erro ao carregar uma ou mais texturas PBR para Checkpoints (Metal034):", error);
     }
 
-    // --- Carregar Texturas PBR para Plataformas Normais (Metal049A) ---
     let normalTextureColor = null;
     let normalTextureNormal = null;
     let normalTextureRoughness = null;
@@ -118,10 +109,8 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         normalTextureDisplacement = await textureLoader.loadAsync(`${normalPlatformTexturePath}Metal049A_1K-JPG_Displacement.jpg`);
         normalTextureDisplacement.wrapS = THREE.RepeatWrapping; normalTextureDisplacement.wrapT = THREE.RepeatWrapping;
     } catch (error) {
-        console.error("Erro ao carregar uma ou mais texturas PBR para Plataformas Normais (Metal049A):", error);
     }
 
-    // --- Materiais ---
     const platformMaterial = new THREE.MeshPhysicalMaterial({
         map: normalTextureColor,
         normalMap: normalTextureNormal,
@@ -132,9 +121,9 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         displacementMap: normalTextureDisplacement,
         displacementScale: 0.01, 
         displacementBias: -0.005, 
-        clearcoat: 1.0, // Renomeado de coat
-        clearcoatRoughness: 0.05, // Renomeado de coatRoughness
-        clearcoatNormalMap: normalTextureNormal, // Renomeado de coatNormalMap
+        clearcoat: 1.0, 
+        clearcoatRoughness: 0.05, 
+        clearcoatNormalMap: normalTextureNormal, 
     });
     if (!normalTextureColor) {
         platformMaterial.color = new THREE.Color(0x666666); 
@@ -152,9 +141,9 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         displacementMap: cpTextureDisplacement,
         displacementScale: 0.01,
         displacementBias: -0.005,
-        clearcoat: 1.0, // Renomeado de coat
-        clearcoatRoughness: 0.2, // Renomeado de coatRoughness
-        clearcoatNormalMap: cpTextureNormal, // Renomeado de coatNormalMap
+        clearcoat: 1.0, 
+        clearcoatRoughness: 0.2, 
+        clearcoatNormalMap: cpTextureNormal, 
         emissive: new THREE.Color(0xffffff),
         emissiveIntensity: 0.2, 
         emissiveMap: cpTextureColor,
@@ -221,7 +210,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         const repeatFactorX = size[0] / repeatScaleFactor;
         const repeatFactorZ = size[2] / repeatScaleFactor;
 
-        const mapsToRepeat = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'displacementMap', 'emissiveMap', 'clearcoatNormalMap']; // Atualizado coatNormalMap para clearcoatNormalMap
+        const mapsToRepeat = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'displacementMap', 'emissiveMap', 'clearcoatNormalMap']; 
 
         for (const mapType of mapsToRepeat) {
             if (platformSpecificMaterial[mapType] && platformSpecificMaterial[mapType].isTexture) {
@@ -230,12 +219,12 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
             }
         }
         
-        const platformMesh = new THREE.Mesh(geometry, platformSpecificMaterial); // Definir a malha da plataforma
+        const platformMesh = new THREE.Mesh(geometry, platformSpecificMaterial); 
             
-        platformMesh.position.set(...position); // Usar platformMesh
-        platformMesh.castShadow = true; // Usar platformMesh
-        platformMesh.receiveShadow = true; // Usar platformMesh
-        scene.add(platformMesh); // Usar platformMesh
+        platformMesh.position.set(...position); 
+        platformMesh.castShadow = true; 
+        platformMesh.receiveShadow = true; 
+        scene.add(platformMesh); 
 
         const shape = new CANNON.Box(new CANNON.Vec3(size[0] / 2, size[1] / 2, size[2] / 2));
         const body = new CANNON.Body({ mass: 0, position: new CANNON.Vec3(...position), shape: shape, material: groundWallMaterial, collisionFilterGroup: GROUP_GROUND, collisionFilterMask: GROUP_PLAYER });

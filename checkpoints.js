@@ -9,31 +9,31 @@ export default class CheckpointManager {
         this.initialCheckpointSet = false;
         this.levelCompleteCallback = levelCompleteCallback;
         this.completedLevel = false;
-        this.checkpointOpacityState = 0.0; // Estado inicial: 0.0 (invisível)
-        this.allCheckpointVisuals = []; // Array para guardar todos os visuais
+        this.checkpointOpacityState = 0.0; 
+        this.allCheckpointVisuals = []; 
 
         this.world.addEventListener('postStep', this._detectCheckpoints.bind(this));
     }
 
-    // Método para registar um visual de checkpoint (chamar ao criar a cena)
+    
     registerCheckpointVisual(visual) {
         if (visual && visual.material) {
             this.allCheckpointVisuals.push(visual);
-            // Aplicar estado inicial de opacidade
+            
             visual.material.opacity = this.checkpointOpacityState;
             visual.material.transparent = this.checkpointOpacityState < 1.0;
             visual.material.needsUpdate = true;
         }
     }
 
-    // Método para alternar a opacidade
+    
     toggleCheckpointOpacity() {
-        // Alterna entre 0.5 e 0.0
+        
         this.checkpointOpacityState = (this.checkpointOpacityState === 0.5) ? 0.0 : 0.5;
         const isTransparent = this.checkpointOpacityState < 1.0;
-        console.log(`Checkpoint opacity set to: ${this.checkpointOpacityState}`);
+        
 
-        // Aplica a nova opacidade a todos os visuais registados
+        
         this.allCheckpointVisuals.forEach(visual => {
             if (visual && visual.material) {
                 visual.material.opacity = this.checkpointOpacityState;
@@ -46,7 +46,7 @@ export default class CheckpointManager {
     setInitialCheckpoint(initialPosition) {
         this.lastCheckpoint = initialPosition.clone();
         this.initialCheckpointSet = true;
-        console.log('Initial checkpoint set:', this.lastCheckpoint);
+        
     }
 
     respawnPlayer(camera, playerCtrl, spawnYaw) {
@@ -65,7 +65,7 @@ export default class CheckpointManager {
         playerCtrl.canJump = false;
         playerCtrl.wasOnGround = false;
 
-        console.log('Player respawned at:', respawnPos);
+        
     }
 
     _detectCheckpoints() {
@@ -96,19 +96,19 @@ export default class CheckpointManager {
     }
 
     _handleCheckpointActivation(body) {
-        const isTransparent = this.checkpointOpacityState < 1.0; // Obter estado de transparência
+        const isTransparent = this.checkpointOpacityState < 1.0; 
 
         if (body.isFinalCheckpoint && this.levelCompleteCallback) {
-            console.log('Final checkpoint reached!');
+            
             this.completedLevel = true;
             this.levelCompleteCallback();
         } else if (!body.isFinalCheckpoint && body.visual !== this.activeCheckpointVisual) {
             this.lastCheckpoint.copy(body.position);
-            console.log('Checkpoint updated:', this.lastCheckpoint);
+            
 
-            // Restaura cor e opacidade do checkpoint anterior
+            
             if (this.activeCheckpointVisual && this.activeCheckpointVisual.material) {
-                this.activeCheckpointVisual.material.color.set(0xff0000); // Cor inativa
+                this.activeCheckpointVisual.material.color.set(0xff0000); 
                 this.activeCheckpointVisual.material.opacity = this.checkpointOpacityState;
                 this.activeCheckpointVisual.material.transparent = isTransparent;
                 this.activeCheckpointVisual.material.needsUpdate = true;
@@ -116,15 +116,15 @@ export default class CheckpointManager {
 
             this.activeCheckpointVisual = body.visual;
 
-            // Define cor e opacidade do novo checkpoint ativo
+            
             if (this.activeCheckpointVisual && this.activeCheckpointVisual.material) {
-                this.activeCheckpointVisual.material.color.set(0x00ff00); // Cor ativa
+                this.activeCheckpointVisual.material.color.set(0x00ff00); 
                 this.activeCheckpointVisual.material.opacity = this.checkpointOpacityState;
                 this.activeCheckpointVisual.material.transparent = isTransparent;
                 this.activeCheckpointVisual.material.needsUpdate = true;
             }
         } else if (body.visual && body.visual.material && body.visual.material.opacity !== this.checkpointOpacityState) {
-            // Garante que checkpoints não ativos mantêm a opacidade correta (caso tenha mudado)
+            
             if (body.visual !== this.activeCheckpointVisual) {
                 body.visual.material.opacity = this.checkpointOpacityState;
                 body.visual.material.transparent = isTransparent;
@@ -139,6 +139,6 @@ export default class CheckpointManager {
 
     destroy() {
         this.world.removeEventListener('postStep', this._detectCheckpoints.bind(this));
-        this.allCheckpointVisuals = []; // Limpa a referência
+        this.allCheckpointVisuals = []; 
     }
 }

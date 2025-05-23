@@ -1,12 +1,12 @@
 import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
-import { GROUP_GROUND } from './collisionGroups.js'; // Ajusta o caminho
+import { GROUP_GROUND } from './collisionGroups.js';
 
 export default class PlayerController {
     constructor(camera, domElement, body, world, opts = {}) {
         this.camera = camera
         this.dom = domElement
-        this.body = body // Guarda a referência ao corpo físico
+        this.body = body
         this.world = world
         this.checkpointManager = opts.checkpointManager;
         this.spawnYaw = opts.spawnYaw;
@@ -23,10 +23,10 @@ export default class PlayerController {
         })
 
         this.pitch = 0; this.yaw = 0
-        this.keys = {}; 
+        this.keys = {};
         this.canJump = false
         this.jumpQueued = false;
-        this.wasOnGround = true; 
+        this.wasOnGround = true;
         this.wallNormal = new CANNON.Vec3();
 
         this.landingSound = null;
@@ -35,8 +35,7 @@ export default class PlayerController {
         this.noclipSpeed = opts.noclipSpeed || 10;
 
         this.timeOnUnsafePlatform = 0;
-        this.unsafePlatformGracePeriod = 0.75; 
-        // this.minSpeedToConsiderMoving = 0.25; // Não é mais usado para esta lógica específica
+        this.unsafePlatformGracePeriod = 0.75;
 
         this._origType = this.body.type;
         this._origCollision = this.body.collisionResponse;
@@ -45,7 +44,6 @@ export default class PlayerController {
             this.landingSound = new Audio('./assets/sound/land_1.mp3');
             this.landingSound.preload = 'auto';
             this.landingSound.volume = 0.025;
-            console.log("Som de aterrissagem carregado.");
         } catch (error) {
             console.error("Erro ao carregar som de aterrissagem:", error);
         }
@@ -78,7 +76,7 @@ export default class PlayerController {
     _setupKeys() {
         window.addEventListener('keydown', e => {
             this.keys[e.code] = true;
-            if (e.code === 'Space') this.jumpQueued = true; // só marca quando pressionado
+            if (e.code === 'Space') this.jumpQueued = true;
         });
         window.addEventListener('keyup', e => {
             this.keys[e.code] = false;
@@ -88,30 +86,26 @@ export default class PlayerController {
 
     toggleNoclip() {
         this.noclip = !this.noclip;
-        console.log(`noclip ${this.noclip ? 'ON' : 'OFF'}`);
 
         if (this.noclip) {
-            // passa a cinemático e sem colisão
             this.body.type = CANNON.Body.KINEMATIC;
             this.body.collisionResponse = false;
         } else {
-            // restaura física normal
             this.body.type = this._origType;
             this.body.collisionResponse = this._origCollision;
             this.body.wakeUp();
         }
 
-        // zera velocidades para não arrastar nada estranho
         this.body.velocity.setZero();
         return this.noclip;
     }
 
     fixedUpdate(dt) {
-        this.body.wallContactNormal = null; 
+        this.body.wallContactNormal = null;
 
         if (this.noclip) {
             const dir = new THREE.Vector3();
-            this.camera.getWorldDirection(dir); // direção olhar
+            this.camera.getWorldDirection(dir);
             const move = new THREE.Vector3();
             if (this.keys['KeyW']) move.add(dir);
             if (this.keys['KeyS']) move.sub(dir);
@@ -134,7 +128,7 @@ export default class PlayerController {
 
         const rayStart = new CANNON.Vec3(this.body.position.x, this.body.position.y, this.body.position.z);
         const rayEnd = new CANNON.Vec3(this.body.position.x, this.body.position.y - this.rayLength, this.body.position.z);
-        let isOnGroundCurrentFrame = false; // Renomeado para clareza neste frame
+        let isOnGroundCurrentFrame = false;
         const result = new CANNON.RaycastResult();
         let groundBody = null;
 
@@ -148,7 +142,7 @@ export default class PlayerController {
              }
         }
 
-        if (isOnGroundCurrentFrame && !this.wasOnGround) { // Acabou de aterrar
+        if (isOnGroundCurrentFrame && !this.wasOnGround) {
             this.canJump = true;
             if (this.landingSound) {
                 this.landingSound.currentTime = 0;
@@ -170,55 +164,44 @@ export default class PlayerController {
             wallNormalTHREE = new THREE.Vector3(this.body.wallContactNormal.x, this.body.wallContactNormal.y, this.body.wallContactNormal.z).normalize();
         }
 
-        // --- Apply Movement ---
         if (this.canJump && this.keys['Space']) {
-            // --- Jump Logic ---
             currentVel.multiplyScalar(Math.max(0, 1 - this.groundFriction * dt));
             this.body.velocity.y = this.jumpSpeed;
             this.canJump = false;
-            this.wasOnGround = false; // Crucial: ao saltar, não está mais "no chão" para a lógica de aterrissagem
-            this.timeOnUnsafePlatform = 0; // Reset timer ao saltar
-            isOnGroundCurrentFrame = false; // Força a lógica de "Air Movement" para este frame após o input do salto
+            this.wasOnGround = false;
+            this.timeOnUnsafePlatform = 0;
+            isOnGroundCurrentFrame = false;
         }
 
-        if (isOnGroundCurrentFrame) { 
-            // --- Ground Movement (e lógica de plataforma insegura se aplicável) ---
+        if (isOnGroundCurrentFrame) {
             currentVel.multiplyScalar(Math.max(0, 1 - this.groundFriction * dt));
             this._accelerate(currentVel, wishDir, this.speed, this.maxGroundSpeed, dt);
 
-            // --- Lógica da Plataforma Insegura ---
             if (groundBody && groundBody.isUnsafePlatform) {
-                // Se está no chão numa plataforma insegura, o contador avança.
-                // O jogador SÓ escapa se saltar (o que reseta o timer, como visto na lógica de salto).
                 this.timeOnUnsafePlatform += dt;
-                // console.log(`On unsafe platform. Time: ${this.timeOnUnsafePlatform.toFixed(3)}s`); // DEBUG
                 if (this.timeOnUnsafePlatform > this.unsafePlatformGracePeriod) {
-                    console.log("Tempo esgotado em plataforma insegura. Respawing...");
                     if (this.checkpointManager && typeof this.spawnYaw !== 'undefined') {
                         this.checkpointManager.respawnPlayer(this.camera, this, this.spawnYaw);
                     } else {
                         console.error("CheckpointManager ou spawnYaw não definidos no PlayerController!");
                     }
-                    this.timeOnUnsafePlatform = 0; // Reset timer após respawn
+                    this.timeOnUnsafePlatform = 0;
                 }
             } else {
-                // Jogador está em plataforma segura
                 this.timeOnUnsafePlatform = 0;
             }
-            // --- Fim da Lógica da Plataforma Insegura ---
 
-        } else { 
-            // --- Air Movement (ou acabou de saltar) ---
-            this.timeOnUnsafePlatform = 0; // Reset timer se estiver no ar
+        } else {
+            this.timeOnUnsafePlatform = 0;
             let effectiveWishDir = wishDir.clone();
             if (isTouchingWall) {
                 const dot = effectiveWishDir.dot(wallNormalTHREE);
-                if (dot < 0) { 
+                if (dot < 0) {
                     effectiveWishDir.subScaledVector(wallNormalTHREE, dot);
                     if (effectiveWishDir.lengthSq() > 1e-6) {
                          effectiveWishDir.normalize();
                     } else {
-                         effectiveWishDir.set(0, 0, 0); 
+                         effectiveWishDir.set(0, 0, 0);
                     }
                 }
             }
@@ -230,7 +213,6 @@ export default class PlayerController {
         this.body.velocity.z = currentVel.z;
         this.camera.position.copy(this.body.position);
 
-        // Atualiza o estado do chão para o próximo frame
         this.wasOnGround = isOnGroundCurrentFrame;
     }
 

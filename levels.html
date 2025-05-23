@@ -4,51 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Selecionar Nível</title>
-  <link rel="stylesheet" href="menu.css"> <!-- Link para menu.css -->
+  <link rel="stylesheet" href="menu.css"> 
   <style>
-    /* Estilos básicos para o corpo */
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: rgba(0, 0, 0, 0.5); /* Novo fundo como no pauseMenu */
-      backdrop-filter: blur(5px); /* Efeito de blur como no pauseMenu */
-      -webkit-backdrop-filter: blur(5px); /* Suporte Safari para blur */
+      background: rgba(0, 0, 0, 0.5); 
+      backdrop-filter: blur(5px); 
+      -webkit-backdrop-filter: blur(5px); 
       margin: 0;
       font-family: sans-serif;
-      color: #ffffff; /* Adicionado para garantir que o texto padrão seja branco */
-      overflow: hidden; /* Prevenir scrollbars indesejadas */
+      color: #ffffff; 
+      overflow: hidden; 
     }
 
-    /* Estilos para os botões no hover */
     .menu-buttons button:hover {
         background-color: rgba(255, 255, 255, 0.2) !important;
         border-color: rgba(255, 255, 255, 0.8) !important;
     }
-    /* Estilo específico para o botão Voltar no hover */
     .menu-buttons button.back-button:hover {
-        background-color: rgba(255, 80, 80, 0.3) !important; /* Tom avermelhado no hover */
+        background-color: rgba(255, 80, 80, 0.3) !important; 
         border-color: rgba(255, 80, 80, 0.8) !important;
     }
   </style>
 </head>
 <body>
   <div class="menu-container" style="
-    background: rgba(30, 30, 30, 0); /* Fundo da caixa transparente como no pauseMenu */
+    background: rgba(30, 30, 30, 0); 
     padding: 40px 60px;
     border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 25px; /* Gap como no pauseMenu */
+    gap: 25px; 
     align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0); /* Borda transparente como no pauseMenu */
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); /* Sombra transparente como no pauseMenu */
-    color: #ffffff; /* Cor do texto padrão para branco */
+    border: 1px solid rgba(255, 255, 255, 0); 
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0); 
+    color: #ffffff; 
   ">
     <h1 style="
         margin: 0 0 10px 0;
-        font-size: 2.5em; /* Pode ajustar para 2em se quiser exatamente como o "Pausa" */
+        font-size: 2.5em; 
         font-weight: 300;
         letter-spacing: 1px;
         color: #ffffff;
@@ -56,8 +53,8 @@
 
     <div class="menu-buttons" style="
         display: flex;
-        flex-direction: column; /* Botões empilhados verticalmente */
-        gap: 20px; /* Espaço entre botões */
+        flex-direction: column; 
+        gap: 20px; 
         align-items: center;
     ">
       <button id="level1Button" style="
@@ -69,7 +66,7 @@
             cursor: pointer;
             font-size: 1.1em;
             transition: background-color 0.3s ease, border-color 0.3s ease;
-            width: 220px; /* Largura fixa */
+            width: 220px; 
             text-align: center;
       ">Level 1</button>
 
@@ -87,12 +84,12 @@
       ">Level 2</button>
 
       <button id="level3Button" style="
-            background: rgba(255, 255, 255, 0.1); /* Make it look like other buttons */
+            background: rgba(255, 255, 255, 0.1); 
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #ffffff;
             padding: 12px 25px;
             border-radius: 8px;
-            cursor: pointer; /* Enable cursor */
+            cursor: pointer; 
             font-size: 1.1em;
             transition: background-color 0.3s ease, border-color 0.3s ease;
             width: 220px;
@@ -100,7 +97,7 @@
       ">Level 3</button>
 
       <button id="backButton" class="back-button" style="
-            background: rgba(255, 80, 80, 0.1); /* Tom avermelhado como no botão Sair */
+            background: rgba(255, 80, 80, 0.1); 
             border: 1px solid rgba(255, 80, 80, 0.5);
             color: #ffffff;
             padding: 12px 25px;
@@ -110,7 +107,7 @@
             transition: background-color 0.3s ease, border-color 0.3s ease;
             width: 220px;
             text-align: center;
-            margin-top: 10px; /* Espaço extra antes do botão Voltar */
+            margin-top: 10px; 
       ">Voltar</button>
     </div>
   </div>
@@ -120,10 +117,9 @@
     
     const level1Btn = document.getElementById('level1Button');
     const level2Btn = document.getElementById('level2Button');
-    const level3Btn = document.getElementById('level3Button'); // Get the button
+    const level3Btn = document.getElementById('level3Button'); 
     const backBtn = document.getElementById('backButton');
 
-    // --- Level 1 Button ---
     if (level1Btn) {
         level1Btn.replaceWith(level1Btn.cloneNode(true));
         const newLevel1Btn = document.getElementById('level1Button');
@@ -133,7 +129,6 @@
         });
     }
 
-    // --- Level 2 Button ---
     if (level2Btn) {
         level2Btn.replaceWith(level2Btn.cloneNode(true));
         const newLevel2Btn = document.getElementById('level2Button');
@@ -143,19 +138,17 @@
         });
     }
 
-    // --- Level 3 Button --- Make it functional
     if (level3Btn) {
-        level3Btn.replaceWith(level3Btn.cloneNode(true)); // Clone to remove old listeners if any
+        level3Btn.replaceWith(level3Btn.cloneNode(true)); 
         const newLevel3Btn = document.getElementById('level3Button');
         newLevel3Btn.addEventListener('click', () => {
             playMenuClickSound();
             setTimeout(() => {
-                window.location.href='level_3.html'; // Navigate to level_3.html
+                window.location.href='level_3.html'; 
             }, 200);
         });
     }
 
-    // --- Back Button ---
     if (backBtn) {
         backBtn.replaceWith(backBtn.cloneNode(true));
         const newBackBtn = document.getElementById('backButton');
@@ -165,7 +158,7 @@
         });
     }
 
-    const levelsContainer = document.getElementById('levelsContainer'); // Referência ao novo container
+    const levelsContainer = document.getElementById('levelsContainer'); 
 
     async function loadLevelsMenu() {
         try {
@@ -175,29 +168,21 @@
             }
             const htmlContent = await response.text();
             
-            // Usar DOMParser para extrair apenas o conteúdo relevante de levels.html
-            // (por exemplo, o interior do .menu-container de levels.html)
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlContent, 'text/html');
-            const levelsMenuContent = doc.querySelector('.menu-container'); // Ou o seletor apropriado
+            const levelsMenuContent = doc.querySelector('.menu-container'); 
 
             if (levelsMenuContent) {
-                levelsContainer.innerHTML = ''; // Limpa conteúdo anterior
-                levelsContainer.appendChild(levelsMenuContent.cloneNode(true)); // Adiciona o novo conteúdo
-                mainMenuContainer.style.display = 'none'; // Esconde o menu principal
-                optionsMenuContainer.style.display = 'none'; // Garante que o menu de opções está escondido
-                levelsContainer.style.display = 'flex'; // Mostra o menu de níveis
+                levelsContainer.innerHTML = ''; 
+                levelsContainer.appendChild(levelsMenuContent.cloneNode(true)); 
+                mainMenuContainer.style.display = 'none'; 
+                optionsMenuContainer.style.display = 'none'; 
+                levelsContainer.style.display = 'flex'; 
 
-                // Re-anexar os event listeners para os botões de levels.html
-                // O script original de levels.html não será executado automaticamente aqui.
-                // Você precisará replicar a lógica de adicionar listeners aos botões de nível.
                 setupLevelSelectionButtons(); 
-            } else {
-                console.error("Não foi possível encontrar o conteúdo do menu de níveis em levels.html");
             }
 
         } catch (error) {
-            console.error('Erro ao carregar o menu de níveis:', error);
         }
     }
 
@@ -205,12 +190,12 @@
         const level1Btn = levelsContainer.querySelector('#level1Button');
         const level2Btn = levelsContainer.querySelector('#level2Button');
         const level3Btn = levelsContainer.querySelector('#level3Button');
-        const backBtnFromLevels = levelsContainer.querySelector('#backButton'); // Botão "Voltar" DENTRO do conteúdo carregado
+        const backBtnFromLevels = levelsContainer.querySelector('#backButton'); 
 
         if (level1Btn) {
             level1Btn.addEventListener('click', () => {
                 playMenuClickSound();
-                setTimeout(() => { window.location.href = 'level_1.html'; }, 150); // Navegação para o nível real
+                setTimeout(() => { window.location.href = 'level_1.html'; }, 150); 
             });
         }
         if (level2Btn) {
@@ -228,8 +213,8 @@
         if (backBtnFromLevels) {
             backBtnFromLevels.addEventListener('click', () => {
                 playMenuClickSound();
-                levelsContainer.style.display = 'none'; // Esconde o menu de níveis
-                showMainMenu(); // Mostra o menu principal novamente
+                levelsContainer.style.display = 'none'; 
+                showMainMenu(); 
             });
         }
     }
@@ -238,7 +223,6 @@
     if (playBtn) {
       playBtn.addEventListener('click', () => {
         playMenuClickSound();
-        // Em vez de navegar, carrega o menu de níveis
         loadLevelsMenu(); 
       });
     }

@@ -1,11 +1,11 @@
 <div id="optionsMenu" style="
-    display: none; /* Initially hidden */
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5); /* Same overlay as pause menu */
+    background: rgba(0, 0, 0, 0.5); 
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     z-index: 1001; 
@@ -18,19 +18,19 @@
 ">
     <div style="
         background: rgba(30, 30, 30, 0.85);
-        padding: 25px 40px; /* Ajustado o padding */
+        padding: 25px 40px; 
         border-radius: 15px;
         display: flex;
         flex-direction: column;
-        gap: 15px; /* Ajustado o gap */
+        gap: 15px; 
         align-items: center;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         color: #ffffff;
-        min-width: 480px; /* Aumentado para acomodar melhor as abas */
+        min-width: 480px; 
         max-width: 600px;
         max-height: 90vh; 
-        overflow-y: auto; /* Alterado para auto para permitir scroll se o conteúdo for maior */
+        overflow-y: auto; 
     ">
         <h2 style="
             color: #ffffff;
@@ -43,10 +43,10 @@
         <div class="options-tabs">
             <button id="optionsControlsTabButton" class="active-tab">Controlos</button>
             <button id="optionsGraphicsTabButton">Gráficos</button>
-            <button id="optionsAudioTabButton">Áudio</button> <!-- Nova Aba -->
+            <button id="optionsAudioTabButton">Áudio</button> 
         </div>
 
-        <!-- Conteúdo dos Controlos -->
+        
         <div id="optionsControlsSettings" class="options-content">
             <h3 style="font-size: 1.5em; font-weight: 300; margin-top: 0; margin-bottom:15px; text-align:center; color: #eee;">Atalhos de Teclado</h3>
             <fieldset style="border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 15px 25px; width: 100%; box-sizing: border-box;">
@@ -84,7 +84,7 @@
             </fieldset>
         </div>
 
-        <!-- Conteúdo dos Gráficos -->
+        
         <div id="optionsGraphicsSettings" class="options-content" style="display: none;">
             <h3 style="font-size: 1.6em; font-weight: 400; margin-top: 5px; margin-bottom:20px; text-align:center; color: #f0f0f0;">Qualidade Visual</h3>
             <fieldset>
@@ -107,7 +107,7 @@
             <p id="graphicsRestartNote" class="options-note" style="display: none; text-align: center; width: 100%; margin-top: 10px;">Alterações gráficas requerem reinício do nível para aplicar.</p>
         </div>
 
-        <!-- Conteúdo do Áudio (Novo) -->
+        
         <div id="optionsAudioSettings" class="options-content" style="display: none;">
             <h3 style="font-size: 1.6em; font-weight: 400; margin-top: 5px; margin-bottom:20px; text-align:center; color: #f0f0f0;">Definições de Áudio</h3>
             <fieldset>
@@ -141,8 +141,8 @@
         ">Voltar</button>
     </div>
     <style>
-        /* Reset e Base */
-        #optionsMenu * { /* Aplica a todos os descendentes para consistência */
+        
+        #optionsMenu * { 
             box-sizing: border-box;
         }
 
@@ -151,68 +151,68 @@
              border-color: rgba(255, 255, 255, 0.8) !important;
         }
 
-        /* Títulos das Abas (Controlos/Gráficos) e Títulos das Secções (Atalhos, Qualidade Visual) */
+        
         #optionsMenu h3 {
-            font-size: 1.4em; /* Tamanho consistente para subtítulos */
-            font-weight: 400; /* Peso consistente */
-            margin-top: 0; /* Ajustar conforme necessário, mas consistente */
-            margin-bottom: 18px; /* Espaçamento consistente */
+            font-size: 1.4em; 
+            font-weight: 400; 
+            margin-top: 0; 
+            margin-bottom: 18px; 
             text-align: center;
-            color: #f0f0f0; /* Cor consistente */
-            width: 100%; /* Para garantir centralização se houver padding no pai */
+            color: #f0f0f0; 
+            width: 100%; 
         }
         
-        /* Fieldsets e Legends */
+        
          #optionsMenu fieldset {
              border: 1px solid rgba(255, 255, 255, 0.15);
              border-radius: 8px; 
-             padding: 18px 22px; /* Padding consistente */
+             padding: 18px 22px; 
              width: 100%; 
              margin-bottom: 18px; 
          }
-         #optionsMenu fieldset:last-of-type { /* No contexto de .options-content */
+         #optionsMenu fieldset:last-of-type { 
              margin-bottom: 0;
          }
 
          #optionsMenu legend {
              padding: 0 10px; 
              color: #b0b0b0; 
-             font-size: 0.8em; /* Tamanho consistente */
+             font-size: 0.8em; 
              font-weight: 600; 
              text-transform: uppercase;
              letter-spacing: 0.8px; 
          }
 
-        /* Labels dentro do Grid */
+        
          #optionsMenu label {
              justify-self: end; 
              align-self: center; 
              color: #d0d0d0; 
-             font-size: 0.9em; /* Tamanho consistente */
-             padding-right: 5px; /* Pequeno espaçamento do controle */
+             font-size: 0.9em; 
+             padding-right: 5px; 
          }
 
-        /* Botões de Opção, Displays Fixos e Selects */
+        
         #optionsMenu .keybind-button, 
         #optionsMenu .fixed-keybind-display, 
         #optionsMenu .select-style { 
-            background: rgba(80, 80, 80, 0.5); /* Fundo mais escuro e consistente */
-            border: 1px solid rgba(255, 255, 255, 0.25); /* Borda consistente */
+            background: rgba(80, 80, 80, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.25); 
             color: #e0e0e0;
-            padding: 10px 15px; /* Padding consistente */
+            padding: 10px 15px; 
             border-radius: 6px;
-            font-size: 0.9em; /* Tamanho de fonte consistente */
-            min-width: 100px; /* Min-width consistente */
+            font-size: 0.9em; 
+            min-width: 100px; 
             width: 100%; 
             transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
 
-        #optionsMenu .keybind-button { /* Botões clicáveis */
-            text-align: left; /* Alinhar texto à esquerda para botões de opção */
+        #optionsMenu .keybind-button { 
+            text-align: left; 
         }
         
-        #optionsMenu .fixed-keybind-display { /* Displays não interativos (W, S, A, D, etc.) */
-            text-align: center; /* Manter centralizado para estes */
+        #optionsMenu .fixed-keybind-display { 
+            text-align: center; 
         }
 
         #optionsMenu .keybind-button, 
@@ -228,11 +228,11 @@
 
         #optionsMenu .fixed-keybind-display {
             cursor: default;
-            color: #b0b0b0; /* Cor diferente para indicar não interativo */
-            background: rgba(50, 50, 50, 0.4); /* Fundo ainda mais escuro para não interativo */
+            color: #b0b0b0; 
+            background: rgba(50, 50, 50, 0.4); 
         }
         
-        /* Estilo específico para o select */
+        
         #optionsMenu .select-style {
             -webkit-appearance: none; 
             -moz-appearance: none; 
@@ -242,9 +242,9 @@
             background-position: right 12px center; 
             background-size: 10px; 
             padding-right: 35px; 
-            text-align: left; /* Alinhar texto do select à esquerda */
+            text-align: left; 
         }
-        #optionsMenu .select-style option { /* Estilo para as opções dentro do select */
+        #optionsMenu .select-style option { 
             background: rgba(50, 50, 50, 0.9);
             color: #e0e0e0;
         }
@@ -253,39 +253,39 @@
             text-shadow: 0 0 0 #e0e0e0; 
         }
 
-        /* Grid Layout */
+        
         .options-grid {
             width: 100%; 
             display: grid; 
             grid-template-columns: auto 1fr; 
-            gap: 10px 18px; /* Gap consistente */
+            gap: 10px 18px; 
             align-items: center; 
         }
-        /* Para os grids dentro da aba de Controlos que ainda usam estilo inline */
-        #optionsControlsSettings fieldset > div { /* Seletor mais específico se necessário */
+        
+        #optionsControlsSettings fieldset > div { 
             gap: 10px 18px;
-            font-size: 0.9em; /* Para igualar o font-size dos labels e botões */
+            font-size: 0.9em; 
         }
         #optionsControlsSettings fieldset > div label {
-             font-size: 1em; /* Para compensar o font-size do pai e manter 0.9em visual */
+             font-size: 1em; 
         }
 
 
-        /* Abas */
+        
         .options-tabs {
             display: flex;
-            margin-bottom: 22px; /* Espaçamento consistente */
+            margin-bottom: 22px; 
             width: 100%;
             justify-content: center;
         }
 
         .options-tabs button {
-            background: rgba(60, 60, 60, 0.5); /* Fundo consistente para abas */
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Borda consistente */
-            color: #c0c0c0; /* Cor consistente */
-            padding: 10px 18px; /* Padding consistente */
+            background: rgba(60, 60, 60, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: #c0c0c0; 
+            padding: 10px 18px; 
             cursor: pointer;
-            font-size: 0.95em; /* Tamanho consistente */
+            font-size: 0.95em; 
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
             border-radius: 0;
             flex-grow: 1;
@@ -299,7 +299,7 @@
         .options-tabs button:last-child {
             border-top-right-radius: 6px;
             border-bottom-right-radius: 6px;
-            border-left-width: 0; /* Evitar borda dupla */
+            border-left-width: 0; 
         }
 
         .options-tabs button.active-tab {
@@ -314,26 +314,26 @@
             color: #e0e0e0;
         }
 
-        /* Conteúdo das Abas */
+        
         .options-content {
             width: 100%;
             display: flex; 
             flex-direction: column; 
-            gap: 18px; /* Espaçamento consistente entre fieldsets */
+            gap: 18px; 
         }
 
-        /* Nota de Reinício (agora única) */
-        .options-note { /* Estilo para a nota única e também para as antigas se ainda existirem */
+        
+        .options-note { 
             font-size: 0.8em;
-            color: #aaaaaa; /* Cor consistente */
-            text-align: center; /* Centralizar a nota única */
+            color: #aaaaaa; 
+            text-align: center; 
             width: 100%;
-            margin-top: 10px; /* Espaçamento acima da nota */
+            margin-top: 10px; 
         }
-        /* Se a nota estiver fora do fieldset mas dentro de .options-content */
+        
         #graphicsRestartNote {
-             margin-top: 10px; /* Espaço acima da nota */
-             padding: 5px 0; /* Um pouco de padding vertical */
+             margin-top: 10px; 
+             padding: 5px 0; 
         }
 
     </style>

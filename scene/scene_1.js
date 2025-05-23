@@ -4,10 +4,10 @@ import * as CANNON from 'cannon-es';
 import { GROUP_PLAYER, GROUP_GROUND, GROUP_CHECKPOINT_TRIGGER } from '../collisionGroups.js';
 
 export async function createScene(world, checkpointManager, groundWallMaterial, camera) {
-    const scene = await createBaseScene('autumn_field_puresky_1k.hdr'); // Considere um HDRI menor se o desempenho for crítico
+    const scene = await createBaseScene('autumn_field_puresky_1k.hdr'); 
     const movingPlatforms = [];
 
-    // --- Áudio de Fundo ---
+    
     let backgroundSound;
     let listener; 
     if (camera) {
@@ -18,25 +18,21 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         const audioLoader = new THREE.AudioLoader();
 
         try {
-            // Considere usar .mp3 com bitrate mais baixo se o tamanho do ficheiro for uma preocupação
+            
             const buffer = await audioLoader.loadAsync('assets/sound/level1_background_sound.mp3');
             backgroundSound.setBuffer(buffer);
             backgroundSound.setLoop(true);
-            backgroundSound.setVolume(0.05); // Aumentei um pouco, ajuste conforme necessário
+            backgroundSound.setVolume(0.05); 
             if (!backgroundSound.isPlaying) {
                 backgroundSound.play();
             }
-            console.log("Música de fundo do nível 1 carregada e tocando.");
         } catch (error) {
-            console.error("Erro ao carregar música de fundo do nível 1:", error);
         }
-    } else {
-        console.warn("Câmera não fornecida para createScene, áudio de fundo não será inicializado.");
     }
     
     const textureLoader = new THREE.TextureLoader();
 
-    // --- Carregar Texturas PBR ---
+    
     const largePlasticTexturePath = 'assets/textures/Plastic015A_1K-JPG/';
     const smallPlasticTexturePath = 'assets/textures/Plastic016B_1K-JPG/';
 
@@ -85,10 +81,9 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         smallPlasticDisplacementTexture.wrapS = THREE.RepeatWrapping;
         smallPlasticDisplacementTexture.wrapT = THREE.RepeatWrapping;
     } catch (error) {
-        console.error("Erro ao carregar texturas PBR:", error);
     }
 
-    // --- Materiais ---
+    
     const largePlasticTexturedMaterial = new THREE.MeshPhysicalMaterial({
         map: largePlasticColorTexture,
         normalMap: largePlasticNormalTexture,

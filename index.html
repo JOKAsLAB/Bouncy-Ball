@@ -6,7 +6,6 @@
   <title>Menu Inicial</title>
   <link rel="stylesheet" href="menu.css">
   
-  <!-- Mapa de Importação (Import Map) -->
   <script type="importmap">
   {
       "imports": {
@@ -18,22 +17,20 @@
   </script>
 
   <style>
-    /* Estilos básicos para o corpo */
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: rgba(0, 0, 0, 0.5); /* Novo fundo como no pauseMenu */
-      backdrop-filter: blur(5px); /* Efeito de blur como no pauseMenu */
-      -webkit-backdrop-filter: blur(5px); /* Suporte Safari para blur */
+      background: rgba(0, 0, 0, 0.5); 
+      backdrop-filter: blur(5px); 
+      -webkit-backdrop-filter: blur(5px); 
       margin: 0;
       font-family: sans-serif;
-      color: #ffffff; /* Cor padrão do texto */
-      overflow: hidden; /* Prevenir scrollbars indesejadas */
+      color: #ffffff; 
+      overflow: hidden; 
     }
 
-    /* Estilos para os botões no hover (Menu Principal) */
     .menu-container .menu-buttons button:hover {
         background-color: rgba(255, 255, 255, 0.2) !important;
         border-color: rgba(255, 255, 255, 0.8) !important;
@@ -41,7 +38,6 @@
   </style>
 </head>
 <body>
-  <!-- Menu Principal Container -->
   <div class="menu-container" style="
     background: rgba(30, 30, 30, 0); /* Fundo da caixa transparente como no pauseMenu */
     padding: 40px 60px;
@@ -136,7 +132,6 @@
     </div>
   </div>
 
-  <!-- Menu "Como Jogar" Container -->
   <div id="howToPlayMenu" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 1002; justify-content: center; align-items: center; flex-direction: column; font-family: sans-serif; color: #ffffff;">
     <div style="background: rgba(30,30,30,0.85); padding: 30px 50px; border-radius: 15px; display: flex; flex-direction: column; gap: 20px; align-items: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); min-width: 450px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
         <h2 style="margin: 0 0 15px 0; font-size: 2em; font-weight: 300; letter-spacing: 1px;">Como Jogar</h2>
@@ -174,10 +169,8 @@
     </div>
   </div>
 
-  <!-- Novo container para níveis -->
   <div id="levelsContainer" style="display: none;"></div>
 
-  <!-- Novo container para o menu de opções carregado dinamicamente -->
   <div id="mainMenuOptionsMenuContainer" style="display: none;"></div>
 
   <script type="module">
@@ -201,7 +194,7 @@
 
     function showMainMenu() {
         mainMenuContainer.style.display = 'flex';
-        mainMenuOptionsMenuTargetContainer.style.display = 'none'; // ESCONDER O CONTAINER PAI
+        mainMenuOptionsMenuTargetContainer.style.display = 'none'; 
         if (mainMenuOptionsMenuTargetContainer.firstChild) { 
             const actualOptionsMenu = mainMenuOptionsMenuTargetContainer.querySelector('#optionsMenu');
             if (actualOptionsMenu) actualOptionsMenu.style.display = 'none';
@@ -214,7 +207,7 @@
         mainMenuContainer.style.display = 'none';
         levelsContainer.style.display = 'none';
         howToPlayMenu.style.display = 'none';
-        mainMenuOptionsMenuTargetContainer.style.display = 'block'; // OU 'FLEX', MOSTRAR O CONTAINER PAI
+        mainMenuOptionsMenuTargetContainer.style.display = 'block'; 
 
         if (!optionsMenuLoaded) {
             try {
@@ -235,7 +228,7 @@
                 optionsMenuLoaded = true;
             } catch (error) {
                 console.error('Erro ao carregar o menu de opções no menu principal:', error);
-                showMainMenu(); // Garante que o container de opções é escondido em caso de erro
+                showMainMenu(); 
                 return;
             }
         }
@@ -248,7 +241,7 @@
 
     function showHowToPlayMenu() {
         mainMenuContainer.style.display = 'none';
-        mainMenuOptionsMenuTargetContainer.style.display = 'none'; // ESCONDER O CONTAINER PAI
+        mainMenuOptionsMenuTargetContainer.style.display = 'none'; 
         if (mainMenuOptionsMenuTargetContainer.firstChild) {
              const actualOptionsMenu = mainMenuOptionsMenuTargetContainer.querySelector('#optionsMenu');
             if (actualOptionsMenu) actualOptionsMenu.style.display = 'none';
@@ -274,7 +267,7 @@
                 levelsContainer.appendChild(levelsMenuHTML.cloneNode(true));
                 
                 mainMenuContainer.style.display = 'none'; 
-                mainMenuOptionsMenuTargetContainer.style.display = 'none'; // ESCONDER O CONTAINER PAI
+                mainMenuOptionsMenuTargetContainer.style.display = 'none';
                 levelsContainer.style.display = 'flex';
                 howToPlayMenu.style.display = 'none';
 
@@ -387,11 +380,9 @@
     showMainMenu();
   </script>
 
-  <!-- Script para Música de Fundo -->
   <script>
-    let mainMenuBackgroundMusic; // Tornar acessível
+    let mainMenuBackgroundMusic;
 
-    // Função para definir o volume da música do menu principal
     function setMainMenuMusicVolume() {
         if (mainMenuBackgroundMusic) {
             const masterVolume = parseFloat(localStorage.getItem('masterVolume') || '0.5');
@@ -401,7 +392,6 @@
         }
     }
 
-    // Função para iniciar a música do menu principal
     function playMainMenuMusic() {
         if (mainMenuBackgroundMusic && mainMenuBackgroundMusic.paused) {
             const playPromise = mainMenuBackgroundMusic.play();
@@ -416,7 +406,6 @@
                         }).catch(e => {
                             console.error("Erro ao tentar tocar música do menu após interação:", e);
                         });
-                        // Remover listeners após a primeira interação bem-sucedida ou tentativa
                         document.removeEventListener('click', startMusicOnInteraction);
                         document.removeEventListener('keydown', startMusicOnInteraction);
                     };
@@ -432,15 +421,10 @@
         mainMenuBackgroundMusic = new Audio('assets/sound/Music_Menu.mp3');
         mainMenuBackgroundMusic.loop = true;
         
-        setMainMenuMusicVolume(); // Define o volume inicial com base no localStorage
-        playMainMenuMusic(); // Tenta tocar a música
-
-        // Adicionar um listener para quando as opções de áudio são alteradas (opcional, mas bom para feedback imediato)
-        // Isto pode ser feito através de um evento customizado ou chamando setMainMenuMusicVolume()
-        // diretamente de optionsMenuLogic.js se estivermos no contexto do menu principal.
+        setMainMenuMusicVolume(); 
+        playMainMenuMusic(); 
     });
 
-    // Expor globalmente para que optionsMenuLogic possa chamar, se necessário
     window.applyMainMenuVolumeSettings = setMainMenuMusicVolume;
     window.playMainMenuMusicIfNeeded = playMainMenuMusic;
 

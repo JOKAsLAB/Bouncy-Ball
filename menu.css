@@ -1,4 +1,3 @@
-/* Estilo geral */
 body {
   margin: 0;
   padding: 0;
@@ -20,11 +19,10 @@ h1 {
   margin-bottom: 2rem;
 }
 
-/* Estilo dos botões */
 .menu-buttons {
   display: flex;
-  flex-direction: column; /* Alinha os botões na vertical */
-  gap: 15px; /* Espaçamento entre os botões */
+  flex-direction: column; 
+  gap: 15px; 
 }
 
 .menu-buttons button {
