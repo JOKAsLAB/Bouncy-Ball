@@ -193,9 +193,26 @@
     let optionsMenuLoaded = false;
 
     function showMainMenu() {
+        // Restaura todas as propriedades importantes do mainMenuContainer
         mainMenuContainer.style.display = 'flex';
-        mainMenuOptionsMenuTargetContainer.style.display = 'none'; 
-        if (mainMenuOptionsMenuTargetContainer.firstChild) { 
+        mainMenuContainer.style.flexDirection = 'column';
+        mainMenuContainer.style.alignItems = 'center';
+        mainMenuContainer.style.minWidth = '350px';
+        
+        // Adiciona posicionamento absoluto para garantir centralização
+        mainMenuContainer.style.position = 'absolute';
+        mainMenuContainer.style.left = '50%';
+        mainMenuContainer.style.top = '50%';
+        mainMenuContainer.style.transform = 'translate(-50%, -50%)';
+        
+        // Também ajusta o body para garantir que ele mantenha suas propriedades de flex
+        document.body.style.display = 'flex';
+        document.body.style.justifyContent = 'center';
+        document.body.style.alignItems = 'center';
+        document.body.style.minHeight = '100vh';
+        
+        mainMenuOptionsMenuTargetContainer.style.display = 'none';
+        if (mainMenuOptionsMenuTargetContainer.firstChild) {
             const actualOptionsMenu = mainMenuOptionsMenuTargetContainer.querySelector('#optionsMenu');
             if (actualOptionsMenu) actualOptionsMenu.style.display = 'none';
         }
@@ -268,14 +285,25 @@
                 
                 mainMenuContainer.style.display = 'none'; 
                 mainMenuOptionsMenuTargetContainer.style.display = 'none';
-                levelsContainer.style.display = 'flex';
                 howToPlayMenu.style.display = 'none';
+                
+                // Configurar o levelsContainer para centralização
+                levelsContainer.style.display = 'flex';
+                levelsContainer.style.position = 'absolute';
+                levelsContainer.style.left = '50%';
+                levelsContainer.style.top = '50%';
+                levelsContainer.style.transform = 'translate(-50%, -50%)';
+                
+                // Ajustar o body para garantir flex
+                document.body.style.display = 'flex';
+                document.body.style.justifyContent = 'center';
+                document.body.style.alignItems = 'center';
+                document.body.style.minHeight = '100vh';
 
                 setupLevelSelectionButtons();
             } else {
                 console.error("Não foi possível encontrar '.menu-container' em levels.html");
             }
-
         } catch (error) {
             console.error('Erro ao carregar o menu de níveis:', error);
         }
