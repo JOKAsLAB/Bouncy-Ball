@@ -13,7 +13,7 @@ export default class PlayerController {
 
         Object.assign(this, {
             speed: 4,
-            jumpSpeed: 4,
+            jumpSpeed: 3.75,
             airAccel: 3,
             groundFriction: 8,
             maxGroundSpeed: 5,
