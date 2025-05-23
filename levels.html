@@ -115,115 +115,50 @@
   <script type="module">
     import { playMenuClickSound } from './utils/audioUtils.js';
     
+    // Configuração dos botões
     const level1Btn = document.getElementById('level1Button');
     const level2Btn = document.getElementById('level2Button');
     const level3Btn = document.getElementById('level3Button'); 
     const backBtn = document.getElementById('backButton');
 
+    // Forçar visibilidade do cursor de forma simples
+    document.body.style.cursor = 'auto';
+    document.documentElement.style.cursor = 'auto';
+    
+    // Aplicar estilo global para garantir cursor visível
+    const cursorStyle = document.createElement('style');
+    cursorStyle.textContent = `
+      * { cursor: auto !important; }
+      button, a { cursor: pointer !important; }
+    `;
+    document.head.appendChild(cursorStyle);
+
+    // Configurar event listeners
     if (level1Btn) {
-        level1Btn.replaceWith(level1Btn.cloneNode(true));
-        const newLevel1Btn = document.getElementById('level1Button');
-        newLevel1Btn.addEventListener('click', () => {
-            playMenuClickSound();
-            setTimeout(() => { window.location.href='level_1.html'; }, 200);
-        });
+      level1Btn.addEventListener('click', () => {
+        playMenuClickSound();
+        setTimeout(() => { window.location.href='level_1.html'; }, 200);
+      });
     }
 
     if (level2Btn) {
-        level2Btn.replaceWith(level2Btn.cloneNode(true));
-        const newLevel2Btn = document.getElementById('level2Button');
-        newLevel2Btn.addEventListener('click', () => {
-            playMenuClickSound();
-            setTimeout(() => { window.location.href='level_2.html'; }, 200);
-        });
+      level2Btn.addEventListener('click', () => {
+        playMenuClickSound();
+        setTimeout(() => { window.location.href='level_2.html'; }, 200);
+      });
     }
 
     if (level3Btn) {
-        level3Btn.replaceWith(level3Btn.cloneNode(true)); 
-        const newLevel3Btn = document.getElementById('level3Button');
-        newLevel3Btn.addEventListener('click', () => {
-            playMenuClickSound();
-            setTimeout(() => {
-                window.location.href='level_3.html'; 
-            }, 200);
-        });
+      level3Btn.addEventListener('click', () => {
+        playMenuClickSound();
+        setTimeout(() => { window.location.href='level_3.html'; }, 200);
+      });
     }
 
     if (backBtn) {
-        backBtn.replaceWith(backBtn.cloneNode(true));
-        const newBackBtn = document.getElementById('backButton');
-        newBackBtn.addEventListener('click', () => {
-            playMenuClickSound();
-            setTimeout(() => { window.location.href='index.html'; }, 200);
-        });
-    }
-
-    const levelsContainer = document.getElementById('levelsContainer'); 
-
-    async function loadLevelsMenu() {
-        try {
-            const response = await fetch('levels.html');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const htmlContent = await response.text();
-            
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-            const levelsMenuContent = doc.querySelector('.menu-container'); 
-
-            if (levelsMenuContent) {
-                levelsContainer.innerHTML = ''; 
-                levelsContainer.appendChild(levelsMenuContent.cloneNode(true)); 
-                mainMenuContainer.style.display = 'none'; 
-                optionsMenuContainer.style.display = 'none'; 
-                levelsContainer.style.display = 'flex'; 
-
-                setupLevelSelectionButtons(); 
-            }
-
-        } catch (error) {
-        }
-    }
-
-    function setupLevelSelectionButtons() {
-        const level1Btn = levelsContainer.querySelector('#level1Button');
-        const level2Btn = levelsContainer.querySelector('#level2Button');
-        const level3Btn = levelsContainer.querySelector('#level3Button');
-        const backBtnFromLevels = levelsContainer.querySelector('#backButton'); 
-
-        if (level1Btn) {
-            level1Btn.addEventListener('click', () => {
-                playMenuClickSound();
-                setTimeout(() => { window.location.href = 'level_1.html'; }, 150); 
-            });
-        }
-        if (level2Btn) {
-            level2Btn.addEventListener('click', () => {
-                playMenuClickSound();
-                setTimeout(() => { window.location.href = 'level_2.html'; }, 150);
-            });
-        }
-        if (level3Btn) {
-            level3Btn.addEventListener('click', () => {
-                playMenuClickSound();
-                setTimeout(() => { window.location.href = 'level_3.html'; }, 150);
-            });
-        }
-        if (backBtnFromLevels) {
-            backBtnFromLevels.addEventListener('click', () => {
-                playMenuClickSound();
-                levelsContainer.style.display = 'none'; 
-                showMainMenu(); 
-            });
-        }
-    }
-
-
-    if (playBtn) {
-      playBtn.addEventListener('click', () => {
+      backBtn.addEventListener('click', () => {
         playMenuClickSound();
-        loadLevelsMenu(); 
+        setTimeout(() => { window.location.href='index.html'; }, 200);
       });
     }
   </script>
