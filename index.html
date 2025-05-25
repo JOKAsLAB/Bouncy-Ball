@@ -405,7 +405,7 @@
     if (sourceCodeButton) {
         sourceCodeButton.addEventListener('click', () => {
             playMenuClickSound();
-            window.open('https://github.com/seu-usuario/threejs-3d-fps-platformer', '_blank');
+            window.open('https://github.com/JOKAsLAB/Bouncy-Ball', '_blank'); // <--- ALTERADO AQUI
         });
     }
 
@@ -444,7 +444,7 @@
     function setMainMenuMusicVolume() {
         if (mainMenuBackgroundMusic) {
             const masterVolume = parseFloat(localStorage.getItem('masterVolume') || '0.5');
-            const musicVolumeSetting = parseFloat(localStorage.getItem('musicVolume') || '0.05'); // Volume específico para música
+            const musicVolumeSetting = parseFloat(localStorage.getItem('menuMusicVolume') || '0.05'); // Alterado de 'musicVolume' para 'menuMusicVolume'
             mainMenuBackgroundMusic.volume = musicVolumeSetting * masterVolume;
             console.log(`[IndexHTML] Volume da música do menu definido para: ${mainMenuBackgroundMusic.volume} (Master: ${masterVolume}, Music: ${musicVolumeSetting})`);
         }

@@ -10,9 +10,10 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
     
     let backgroundSound;
     let listener; 
-    if (camera) {
+    if (camera) { // A câmara é passada como argumento
         listener = new THREE.AudioListener();
         camera.add(listener); 
+        camera.userData.listener = listener; // <--- ADICIONE ESTA LINHA
 
         backgroundSound = new THREE.Audio(listener);
         const audioLoader = new THREE.AudioLoader();
@@ -229,5 +230,5 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         }
     });
 
-    return { scene, movingPlatforms, backgroundSound, audioListener: listener };
+    return { scene, movingPlatforms, backgroundSound, audioListener: listener }; // Pode continuar a retornar o listener se precisar dele para outras coisas, mas o importante é que esteja em camera.userData.listener
 }

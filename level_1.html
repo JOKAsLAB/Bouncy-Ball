@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bouncy Ball - Nível 1</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- ADICIONAR DE VOLTA O IMPORTMAP -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+            "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js",
+            "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+        }
+    }
+    </script>
+    
     <style>
         #levelCompleteMenu {
             display: none; 
@@ -80,15 +92,6 @@
             font-size: 1em; 
         }
     </style>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
-            "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js",
-            "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
-        }
-    }
-    </script>
 </head>
 <body>
     

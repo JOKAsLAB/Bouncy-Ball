@@ -43,7 +43,12 @@ export default class PlayerController {
         try {
             this.landingSound = new Audio('./assets/sound/land_1.mp3');
             this.landingSound.preload = 'auto';
-            this.landingSound.volume = 0.025;
+            // Aplicar volume com base nas configurações guardadas
+            const masterVolume = parseFloat(localStorage.getItem('masterVolume') || '0.5');
+            const sfxVolumeSetting = parseFloat(localStorage.getItem('sfxVolume') || '0.1'); // Usar a mesma chave do optionsMenuLogic
+            this.landingSound.volume = (0.25 * sfxVolumeSetting) * masterVolume; // Ex: volume base de 0.25, ajustado por SFX e Master
+                                                                    // O 0.25 é um valor base que pode ajustar
+    console.log(`[PlayerController] Landing sound volume set to: ${this.landingSound.volume} (Base: 0.25, SFX: ${sfxVolumeSetting}, Master: ${masterVolume})`);
         } catch (error) {
             console.error("Erro ao carregar som de aterrissagem:", error);
         }
@@ -145,6 +150,17 @@ export default class PlayerController {
         if (isOnGroundCurrentFrame && !this.wasOnGround) {
             this.canJump = true;
             if (this.landingSound) {
+                // Atualizar volume antes de tocar, lendo do localStorage
+                const masterVolume = parseFloat(localStorage.getItem('masterVolume') || '0.5');
+                const sfxVolumeSetting = parseFloat(localStorage.getItem('sfxVolume') || '0.1');
+                
+                // Defina um volume base para este som específico, se desejar.
+                // Este é o volume que o som teria se sfxVolume e masterVolume fossem 1.
+                const baseLandingSoundVolume = 0.25; // Pode ser uma propriedade da classe ou uma constante
+
+                this.landingSound.volume = (baseLandingSoundVolume * sfxVolumeSetting) * masterVolume;
+                // console.log(`[PlayerController] Landing sound playing with volume: ${this.landingSound.volume}`); // Para debug
+
                 this.landingSound.currentTime = 0;
                 this.landingSound.play().catch(err => console.error('Erro ao tocar som de aterrissagem:', err));
             }
