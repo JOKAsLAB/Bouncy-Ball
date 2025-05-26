@@ -107,7 +107,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
     const checkpointVisualMaterialBase = new THREE.MeshPhysicalMaterial({ color: 0xff0000, roughness: 0.9, metalness: 0.0, transparent: true, opacity: 0.5 });
     const finalCheckpointVisualMaterialBase = new THREE.MeshPhysicalMaterial({ color: 0xffff00, roughness: 0.3, metalness: 0.6, transparent: true, opacity: 0.5 });
 
-    const rainCount = 8000; 
+    const rainCount = 50000; 
     const rainGeometry = new THREE.BufferGeometry();
     const rainVertices = [];
     const rainSpreadX = 100; 
