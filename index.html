@@ -22,7 +22,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: rgba(65, 134, 212, 0.5); /* Azul bebé translúcido */
+      background: rgba(65, 134, 212, 0.5);
       margin: 0;
       font-family: sans-serif;
       color: #ffffff; 
@@ -34,15 +34,14 @@
         border-color: rgba(255, 255, 255, 0.8) !important;
     }
 
-    /* Adicione este CSS para o slideshow */
     #background-slideshow {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: -1; /* Coloca o slideshow atrás de todo o conteúdo */
-      overflow: hidden; /* Evita barras de scroll se a imagem for maior */
+      z-index: -1;
+      overflow: hidden;
     }
 
     #background-slideshow img {
@@ -242,19 +241,16 @@
     let optionsMenuLoaded = false;
 
     function showMainMenu() {
-        // Restaura todas as propriedades importantes do mainMenuContainer
         mainMenuContainer.style.display = 'flex';
         mainMenuContainer.style.flexDirection = 'column';
         mainMenuContainer.style.alignItems = 'center';
         mainMenuContainer.style.minWidth = '350px';
         
-        // Adiciona posicionamento absoluto para garantir centralização
         mainMenuContainer.style.position = 'absolute';
         mainMenuContainer.style.left = '50%';
         mainMenuContainer.style.top = '50%';
         mainMenuContainer.style.transform = 'translate(-50%, -50%)';
         
-        // Também ajusta o body para garantir que ele mantenha suas propriedades de flex
         document.body.style.display = 'flex';
         document.body.style.justifyContent = 'center';
         document.body.style.alignItems = 'center';
@@ -336,14 +332,12 @@
                 mainMenuOptionsMenuTargetContainer.style.display = 'none';
                 howToPlayMenu.style.display = 'none';
                 
-                // Configurar o levelsContainer para centralização
                 levelsContainer.style.display = 'flex';
                 levelsContainer.style.position = 'absolute';
                 levelsContainer.style.left = '50%';
                 levelsContainer.style.top = '50%';
                 levelsContainer.style.transform = 'translate(-50%, -50%)';
                 
-                // Ajustar o body para garantir flex
                 document.body.style.display = 'flex';
                 document.body.style.justifyContent = 'center';
                 document.body.style.alignItems = 'center';

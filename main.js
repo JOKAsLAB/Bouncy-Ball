@@ -626,7 +626,6 @@ export function setMusicVolume(volume) {
 }
 
 export function setSfxVolume(volume) {
-    // Placeholder: Implement SFX volume control
 }
 
 window.setMasterVolumeFromMain = setMasterVolume;
