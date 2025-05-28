@@ -25,7 +25,7 @@ const createCamera = (fov = 90, near = 0.1) => {
 
     camera.position.set(0, 1.7, 0);
 
-    camera.rotation.order = 'YXZ'; 
+    camera.rotation.order = 'YXZ';
 
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;

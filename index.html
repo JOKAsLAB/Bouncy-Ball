@@ -23,9 +23,6 @@
       align-items: center;
       min-height: 100vh;
       background: rgba(65, 134, 212, 0.5); /* Azul bebé translúcido */
-      /* Vamos comentar o backdrop-filter do body por agora para ver o efeito do blur direto na imagem */
-      /* backdrop-filter: blur(5px); */
-      /* -webkit-backdrop-filter: blur(5px); */
       margin: 0;
       font-family: sans-serif;
       color: #ffffff; 
@@ -56,34 +53,28 @@
       height: 100%;
       object-fit: cover; 
       opacity: 0; 
-      transition: opacity 1s ease-in-out, filter 1s ease-in-out; /* Adicionada transição para o filtro */
+      transition: opacity 1s ease-in-out, filter 1s ease-in-out; 
     }
 
     #background-slideshow img.active {
-      opacity: 0.95; /* Ou o valor de opacidade que preferir para a imagem de fundo */
-      filter: blur(5px); /* Aplicar o blur diretamente na imagem ativa */
-      -webkit-filter: blur(5px); /* Para compatibilidade com Safari */
+      opacity: 0.95; 
+      filter: blur(5px); 
+      -webkit-filter: blur(5px); 
     }
   </style>
 </head>
 <body>
-  <!-- Adicione este script no início do body -->
   <script>
-    // Desabilitar completamente o pointer lock em todo o menu
     document.addEventListener('DOMContentLoaded', function() {
-      // Forçar saída de qualquer pointer lock existente
       if (document.pointerLockElement) {
         document.exitPointerLock();
       }
 
-      // Bloquear qualquer tentativa de usar pointer lock
       const originalRequestPointerLock = Element.prototype.requestPointerLock;
       Element.prototype.requestPointerLock = function() {
-        console.log('Pointer lock foi bloqueado no menu');
-        return; // Não faz nada, efetivamente desativando pointer lock
+        return; 
       };
 
-      // Garantir que o cursor esteja sempre visível
       const style = document.createElement('style');
       style.innerHTML = `
         * { cursor: auto !important; }
@@ -91,7 +82,6 @@
       `;
       document.head.appendChild(style);
       
-      // Aplicar cursor visível ao body e html
       document.body.style.cursor = 'auto';
       document.documentElement.style.cursor = 'auto';
     });
@@ -434,7 +424,7 @@
     if (sourceCodeButton) {
         sourceCodeButton.addEventListener('click', () => {
             playMenuClickSound();
-            window.open('https://github.com/JOKAsLAB/Bouncy-Ball', '_blank'); // <--- ALTERADO AQUI
+            window.open('https://github.com/JOKAsLAB/Bouncy-Ball', '_blank'); 
         });
     }
 
@@ -473,9 +463,8 @@
     function setMainMenuMusicVolume() {
         if (mainMenuBackgroundMusic) {
             const masterVolume = parseFloat(localStorage.getItem('masterVolume') || '0.5');
-            const musicVolumeSetting = parseFloat(localStorage.getItem('menuMusicVolume') || '0.05'); // Alterado de 'musicVolume' para 'menuMusicVolume'
+            const musicVolumeSetting = parseFloat(localStorage.getItem('menuMusicVolume') || '0.05'); 
             mainMenuBackgroundMusic.volume = musicVolumeSetting * masterVolume;
-            console.log(`[IndexHTML] Volume da música do menu definido para: ${mainMenuBackgroundMusic.volume} (Master: ${masterVolume}, Music: ${musicVolumeSetting})`);
         }
     }
 
@@ -484,12 +473,10 @@
             const playPromise = mainMenuBackgroundMusic.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
-                    console.log("Música de fundo do menu iniciada/retomada.");
                 }).catch(error => {
                     console.warn("Autoplay da música de fundo do menu bloqueado. Tentando após interação do utilizador.", error);
                     const startMusicOnInteraction = () => {
                         mainMenuBackgroundMusic.play().then(() => {
-                            console.log("Música de fundo do menu iniciada após interação.");
                         }).catch(e => {
                             console.error("Erro ao tentar tocar música do menu após interação:", e);
                         });
@@ -511,10 +498,8 @@
         setMainMenuMusicVolume(); 
         playMainMenuMusic(); 
 
-        // --- INÍCIO DO CÓDIGO DO SLIDESHOW ---
         const slideshowContainer = document.createElement('div');
         slideshowContainer.id = 'background-slideshow';
-        // Insere o container do slideshow como o primeiro filho do body
         document.body.insertBefore(slideshowContainer, document.body.firstChild);
 
         const slideshowImages = [
@@ -522,7 +507,7 @@
             'assets/images/2-1.png', 'assets/images/2-2.png', 'assets/images/2-3.png', 
             'assets/images/3-1.png', 'assets/images/3-2.png', 'assets/images/3-3.png', 
         ];
-        let currentSlideshowImageIndex = 0; // Pode ser inicializado com 0 ou -1
+        let currentSlideshowImageIndex = 0; 
 
         function preloadSlideshowImages() {
             slideshowImages.forEach(src => {
@@ -542,20 +527,18 @@
                 }, 1000); 
             }
 
-            // --- INÍCIO DA MODIFICAÇÃO PARA ORDEM ALEATÓRIA ---
             let newImageIndex;
-            if (slideshowImages.length > 1) { // Só faz sentido randomizar se houver mais de uma imagem
+            if (slideshowImages.length > 1) { 
                 do {
                     newImageIndex = Math.floor(Math.random() * slideshowImages.length);
-                } while (newImageIndex === currentSlideshowImageIndex); // Garante que a nova imagem é diferente da atual
+                } while (newImageIndex === currentSlideshowImageIndex); 
             } else {
-                newImageIndex = 0; // Se só houver uma imagem, usa sempre essa
+                newImageIndex = 0; 
             }
             currentSlideshowImageIndex = newImageIndex;
-            // --- FIM DA MODIFICAÇÃO PARA ORDEM ALEATÓRIA ---
 
             const nextImage = document.createElement('img');
-            nextImage.src = slideshowImages[currentSlideshowImageIndex]; // Usa o novo índice aleatório
+            nextImage.src = slideshowImages[currentSlideshowImageIndex]; 
             
             slideshowContainer.appendChild(nextImage);
 
@@ -565,8 +548,7 @@
 
         preloadSlideshowImages(); 
         changeBackgroundImage(); 
-        setInterval(changeBackgroundImage, 2000); // Muda a imagem a cada 7 segundos (ajuste conforme necessário)
-        // --- FIM DO CÓDIGO DO SLIDESHOW ---
+        setInterval(changeBackgroundImage, 2000); 
 
     });
 

@@ -1,4 +1,3 @@
-// Em audioUtils.js
 console.log('Tentando carregar o som do menu...');
 
 let clickSound;

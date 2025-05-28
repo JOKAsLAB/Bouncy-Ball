@@ -345,15 +345,12 @@ window.addEventListener('keydown', (event) => {
 renderer.domElement.addEventListener('click', () => {
     if (currentLevelAudioContext && currentLevelAudioContext.state === 'suspended') {
         currentLevelAudioContext.resume().then(() => {
-            console.log("AudioContext resumido após interação.");
             if (currentLevelBackgroundSound && !currentLevelBackgroundSound.isPlaying) {
                 currentLevelBackgroundSound.play();
-                console.log("Tentando tocar música de fundo após resumir AudioContext.");
             }
         });
     } else if (currentLevelBackgroundSound && !currentLevelBackgroundSound.isPlaying) {
         currentLevelBackgroundSound.play();
-        console.log("Tentando tocar música de fundo (AudioContext já estava a correr).");
     }
 });
 
@@ -404,7 +401,6 @@ async function loadLevel(levelPath) {
                 currentRainHeight = levelData.rainHeight || 30;
                 currentRainSpreadX = levelData.rainSpreadX || 50;
                 currentRainSpreadZ = levelData.rainSpreadZ || 50;
-                console.log("Partículas de chuva carregadas para o nível.");
             }
         }
     } catch (error) {
@@ -616,7 +612,6 @@ if (timerDisplayElement && finalTimeDisplayElement) {
 export function setMasterVolume(volume) {
     if (camera && camera.userData.listener) {
         camera.userData.listener.setMasterVolume(parseFloat(volume));
-        console.log(`[MainJS] Master Volume definido para: ${volume}`);
     } else {
         console.warn("[MainJS] AudioListener não encontrado para definir Master Volume.");
     }
@@ -625,14 +620,13 @@ export function setMasterVolume(volume) {
 export function setMusicVolume(volume) {
     if (currentLevelBackgroundSound) {
         currentLevelBackgroundSound.setVolume(parseFloat(volume));
-        console.log(`[MainJS] Volume da Música do Nível definido para: ${volume}`);
     } else {
         console.warn("[MainJS] currentLevelBackgroundSound não encontrado para definir Volume da Música.");
     }
 }
 
 export function setSfxVolume(volume) {
-    console.log(`[MainJS] Volume SFX (placeholder) definido para: ${volume}`);
+    // Placeholder: Implement SFX volume control
 }
 
 window.setMasterVolumeFromMain = setMasterVolume;

@@ -115,17 +115,14 @@
   <script type="module">
     import { playMenuClickSound } from './utils/audioUtils.js';
     
-    // Configuração dos botões
     const level1Btn = document.getElementById('level1Button');
     const level2Btn = document.getElementById('level2Button');
     const level3Btn = document.getElementById('level3Button'); 
     const backBtn = document.getElementById('backButton');
 
-    // Forçar visibilidade do cursor de forma simples
     document.body.style.cursor = 'auto';
     document.documentElement.style.cursor = 'auto';
     
-    // Aplicar estilo global para garantir cursor visível
     const cursorStyle = document.createElement('style');
     cursorStyle.textContent = `
       * { cursor: auto !important; }
@@ -133,7 +130,6 @@
     `;
     document.head.appendChild(cursorStyle);
 
-    // Configurar event listeners
     if (level1Btn) {
       level1Btn.addEventListener('click', () => {
         playMenuClickSound();

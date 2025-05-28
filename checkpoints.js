@@ -124,7 +124,6 @@ export default class CheckpointManager {
                 this.activeCheckpointVisual.material.needsUpdate = true;
             }
         } else if (body.visual && body.visual.material && body.visual.material.opacity !== this.checkpointOpacityState) {
-            
             if (body.visual !== this.activeCheckpointVisual) {
                 body.visual.material.opacity = this.checkpointOpacityState;
                 body.visual.material.transparent = isTransparent;

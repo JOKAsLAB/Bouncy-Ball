@@ -10,10 +10,10 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
     
     let backgroundSound;
     let listener; 
-    if (camera) { // A câmara é passada como argumento
+    if (camera) {
         listener = new THREE.AudioListener();
         camera.add(listener); 
-        camera.userData.listener = listener; // <--- ADICIONE ESTA LINHA
+        camera.userData.listener = listener;
 
         backgroundSound = new THREE.Audio(listener);
         const audioLoader = new THREE.AudioLoader();
@@ -28,6 +28,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
                 backgroundSound.play();
             }
         } catch (error) {
+            console.error('Erro ao carregar o som de fundo do nível 1:', error);
         }
     }
     
@@ -82,6 +83,7 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         smallPlasticDisplacementTexture.wrapS = THREE.RepeatWrapping;
         smallPlasticDisplacementTexture.wrapT = THREE.RepeatWrapping;
     } catch (error) {
+        console.error('Erro ao carregar texturas:', error);
     }
 
     
@@ -230,5 +232,5 @@ export async function createScene(world, checkpointManager, groundWallMaterial, 
         }
     });
 
-    return { scene, movingPlatforms, backgroundSound, audioListener: listener }; // Pode continuar a retornar o listener se precisar dele para outras coisas, mas o importante é que esteja em camera.userData.listener
+    return { scene, movingPlatforms, backgroundSound, audioListener: listener };
 }

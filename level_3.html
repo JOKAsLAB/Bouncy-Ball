@@ -183,8 +183,10 @@
                 if (menuSoundModule.playMenuClickSound && typeof menuSoundModule.playMenuClickSound === 'function') {
                     playMenuClickSoundFunction = menuSoundModule.playMenuClickSound;
                 } else {
+                    console.warn('playMenuClickSound function not found or not a function in menuSoundSetup.js');
                 }
             } catch (e) {
+                console.error('Error loading or binding menu sounds:', e);
             }
 
 

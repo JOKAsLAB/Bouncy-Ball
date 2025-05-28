@@ -1,5 +1,3 @@
-// filepath: d:\git hub\threejs-3d-fps-platformer\utils\optionsMenuLogic.js
-
 let optionsMenuElement, movementKeyDisplayButtons, backButton;
 let controlsTabButton, graphicsTabButton, controlsSettingsDiv, graphicsSettingsDiv, antialiasToggleButton;
 let shadowQualityButton, viewDistanceSelect; 
@@ -16,16 +14,16 @@ async function loadMainJsAudioControls() {
     if (typeof window.setMasterVolumeFromMain === 'function') { 
         mainJsAudioControls = {
             setMasterVolume: window.setMasterVolumeFromMain,
-            setLevelAmbientVolume: window.setMusicVolumeFromMain, // Será renomeado em main.js
+            setLevelAmbientVolume: window.setMusicVolumeFromMain, 
             setSfxVolume: window.setSfxVolumeFromMain,
         };
     } else {
         try {
             const mainModule = await import('../main.js'); 
-            if (mainModule && mainModule.setMasterVolume && mainModule.setMusicVolume && mainModule.setSfxVolume) { // setMusicVolume será setLevelAmbientVolume
+            if (mainModule && mainModule.setMasterVolume && mainModule.setMusicVolume && mainModule.setSfxVolume) { 
                 mainJsAudioControls = {
                     setMasterVolume: mainModule.setMasterVolume,
-                    setLevelAmbientVolume: mainModule.setMusicVolume, // Mapeando para a função que controlará o som ambiente do nível
+                    setLevelAmbientVolume: mainModule.setMusicVolume, 
                     setSfxVolume: mainModule.setSfxVolume,
                 };
             }
@@ -166,25 +164,20 @@ function applyAudioSettings() {
     const levelAmbientVolumeSetting = parseFloat(localStorage.getItem('levelAmbientVolume') || '0.1');
     const sfxVolumeSetting = parseFloat(localStorage.getItem('sfxVolume') || '0.1');     
 
-    // Para a música do menu principal (geralmente HTML5 Audio)
     if (typeof window.applyMainMenuVolumeSettings === 'function') {
-        // Esta função em index.html deve ser ajustada para usar 'menuMusicVolume'
         window.applyMainMenuVolumeSettings(); 
     }
-    // Para garantir que a música do menu toque se necessário após ajuste
     if (typeof window.playMainMenuMusicIfNeeded === 'function') { 
         window.playMainMenuMusicIfNeeded();
     }
 
     if (mainJsAudioControls) {
-        if (mainJsAudioControls.setMasterVolume) { // Controla o AudioListener do Three.js
+        if (mainJsAudioControls.setMasterVolume) { 
             mainJsAudioControls.setMasterVolume(masterVolume);
         }
-        // Para o som ambiente do nível (geralmente THREE.Audio, volume relativo ao master)
         if (mainJsAudioControls.setLevelAmbientVolume) {
-            mainJsAudioControls.setLevelAmbientVolume(levelAmbientVolumeSetting); // Passa o valor direto do slider
+            mainJsAudioControls.setLevelAmbientVolume(levelAmbientVolumeSetting); 
         }
-        // Para SFX (HTML5 Audio ou outros que precisam de volume combinado)
         if (mainJsAudioControls.setSfxVolume) {
             mainJsAudioControls.setSfxVolume(sfxVolumeSetting * masterVolume);
         }
@@ -198,7 +191,6 @@ function applyAudioSettings() {
         });
     }
 
-    // Para o som de clique do menu (HTML5 Audio)
     if (menuClickSound && typeof menuClickSound.volume !== 'undefined') {
         menuClickSound.volume = sfxVolumeSetting * masterVolume;
     }
@@ -228,8 +220,8 @@ export async function initializeOptionsMenuLogic(menuContainerId = 'optionsMenu'
     viewDistanceSelect = optionsMenuElement.querySelector('#viewDistanceSelect');   
 
     masterVolumeSlider = optionsMenuElement.querySelector('#masterVolumeSlider');
-    menuMusicVolumeSlider = optionsMenuElement.querySelector('#menuMusicVolumeSlider'); // ID atualizado
-    levelAmbientVolumeSlider = optionsMenuElement.querySelector('#levelAmbientVolumeSlider'); // Novo slider
+    menuMusicVolumeSlider = optionsMenuElement.querySelector('#menuMusicVolumeSlider'); 
+    levelAmbientVolumeSlider = optionsMenuElement.querySelector('#levelAmbientVolumeSlider'); 
     sfxVolumeSlider = optionsMenuElement.querySelector('#sfxVolumeSlider');
 
     try {
@@ -240,6 +232,7 @@ export async function initializeOptionsMenuLogic(menuContainerId = 'optionsMenu'
             menuClickSound.volume = sfxVol * masterVol;
         }
     } catch (e) {
+        console.error('Error initializing menu click sound:', e);
         menuClickSound = { play: () => {}, pause: () => {}, currentTime: 0 };
     }
 
@@ -252,8 +245,8 @@ export async function initializeOptionsMenuLogic(menuContainerId = 'optionsMenu'
     if (viewDistanceSelect) viewDistanceSelect.removeEventListener('change', handleViewDistanceChange);     
 
     if (masterVolumeSlider) masterVolumeSlider.removeEventListener('input', handleMasterVolumeChange);
-    if (menuMusicVolumeSlider) menuMusicVolumeSlider.removeEventListener('input', handleMenuMusicVolumeChange); // Nome do handler atualizado
-    if (levelAmbientVolumeSlider) levelAmbientVolumeSlider.removeEventListener('input', handleLevelAmbientVolumeChange); // Novo handler
+    if (menuMusicVolumeSlider) menuMusicVolumeSlider.removeEventListener('input', handleMenuMusicVolumeChange); 
+    if (levelAmbientVolumeSlider) levelAmbientVolumeSlider.removeEventListener('input', handleLevelAmbientVolumeChange); 
     if (sfxVolumeSlider) sfxVolumeSlider.removeEventListener('input', handleSfxVolumeChange);
 
     if (controlsTabButton) {
@@ -283,10 +276,10 @@ export async function initializeOptionsMenuLogic(menuContainerId = 'optionsMenu'
     if (masterVolumeSlider) {
         masterVolumeSlider.addEventListener('input', handleMasterVolumeChange);
     }
-    if (menuMusicVolumeSlider) { // Nome do slider atualizado
+    if (menuMusicVolumeSlider) { 
         menuMusicVolumeSlider.addEventListener('input', handleMenuMusicVolumeChange);
     }
-    if (levelAmbientVolumeSlider) { // Novo slider
+    if (levelAmbientVolumeSlider) { 
         levelAmbientVolumeSlider.addEventListener('input', handleLevelAmbientVolumeChange);
     }
     if (sfxVolumeSlider) {
@@ -369,14 +362,14 @@ function handleMasterVolumeChange() {
     }
 }
 
-function handleMenuMusicVolumeChange() { // Renomeado de handleMusicVolumeChange
+function handleMenuMusicVolumeChange() { 
     if (menuMusicVolumeSlider) {
-        localStorage.setItem('menuMusicVolume', menuMusicVolumeSlider.value); // Chave do localStorage atualizada
+        localStorage.setItem('menuMusicVolume', menuMusicVolumeSlider.value); 
         applyAudioSettings();
     }
 }
 
-function handleLevelAmbientVolumeChange() { // Nova função
+function handleLevelAmbientVolumeChange() { 
     if (levelAmbientVolumeSlider) {
         localStorage.setItem('levelAmbientVolume', levelAmbientVolumeSlider.value);
         applyAudioSettings();
